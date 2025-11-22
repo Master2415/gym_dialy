@@ -1,5 +1,5 @@
 import mysql.connector
-from db import get_connection
+from app.db import get_connection
 
 def seed_exercises(user_id=None):
     exercises = [

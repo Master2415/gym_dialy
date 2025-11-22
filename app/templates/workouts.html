@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Sesiones</h2>
+
+<a class="btn" href="/workouts/new">Nueva sesión</a>
+<div style="display: inline-block; margin-left: 10px;">
+    <a class="btn" href="/analytics" style="background-color: #2196F3;">Ver Progreso 📈</a>
+
+    <div class="dropdown" style="display: inline-block;">
+        <button class="btn" style="background-color: #4CAF50;">Exportar 📊 ▼</button>
+        <div class="dropdown-content">
+            <a href="/export/csv">CSV</a>
+            <a href="/export/json">JSON (Backup)</a>
+        </div>
+    </div>
+
+    <a class="btn" href="/measurements" style="background-color: #9C27B0;">Mediciones Corporales 📏</a>
+</div>
+
+<style>
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: var(--container-bg);
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+    }
+
+    .dropdown-content a {
+        color: var(--text-color);
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+    .dropdown-content a:hover {
+        background-color: var(--bg-color);
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+</style>
+<br><br>
+<div class="calendar-container">
+    <div class="calendar-header">
+        <button id="prevMonth" class="btn-small">&lt;</button>
+        <h3 id="monthYear"></h3>
+        <button id="nextMonth" class="btn-small">&gt;</button>
+    </div>
+    <div class="calendar-grid" id="calendar"></div>
+</div>
+
+<script>
+    const workoutDates = {{ workout_dates | tojson }}; // List of "YYYY-MM-DD"
+    const calendarEl = document.getElementById('calendar');
+    const monthYearEl = document.getElementById('monthYear');
+    let currentDate = new Date();
+
+    function renderCalendar(date) {
+        calendarEl.innerHTML = '';
+        const year = date.getFullYear();
+        const month = date.getMonth();
+
+        monthYearEl.textContent = date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        // Adjust for Monday start (0=Sunday, 1=Monday...)
+        // If we want Monday as first day: (firstDay + 6) % 7
+        // Let's stick to standard Sunday start for simplicity or adjust if needed.
+        // Let's assume standard Sunday start for now.
+
+        for (let i = 0; i < firstDay; i++) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'calendar-day empty';
+            calendarEl.appendChild(emptyDiv);
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'calendar-day';
+            dayDiv.textContent = i;
+
+            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            if (workoutDates.includes(dateString)) {
+                dayDiv.classList.add('has-workout');
+            }
+
+            calendarEl.appendChild(dayDiv);
+        }
+    }
+
+    document.getElementById('prevMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar(currentDate);
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar(currentDate);
+    });
+
+    renderCalendar(currentDate);
+</script>
+<br><br>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <h4 class="stat-title">Días Entrenados (Mes)</h4>
+        <span class="stat-value" style="color: var(--primary-color);">{{ dashboard.days_trained }}</span>
+    </div>
+    <div class="stat-card">
+        <h4 class="stat-title">Mejor 1RM Estimado</h4>
+        <span class="stat-value" style="color: #2196F3;">{{ dashboard.best_1rm }} kg</span>
+    </div>
+</div>
+
+<div class="filter-container">
+    <form method="GET" class="filter-form">
+        <input type="text" name="search" placeholder="Buscar ejercicio..." value="{{ filters.search }}"
+            class="filter-input">
+
+        <input type="date" name="date" value="{{ filters.date }}" class="filter-input">
+
+        <select name="group" class="filter-input">
+            <option value="">Todos los Grupos</option>
+            {% for g in muscle_groups %}
+            <option value="{{ g }}" {% if filters.group==g %}selected{% endif %}>{{ g }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="sort" class="filter-input">
+            <option value="date_desc" {% if filters.sort=='date_desc' %}selected{% endif %}>Fecha (Reciente)</option>
+            <option value="date_asc" {% if filters.sort=='date_asc' %}selected{% endif %}>Fecha (Antigua)</option>
+            <option value="weight_desc" {% if filters.sort=='weight_desc' %}selected{% endif %}>Mayor Peso</option>
+            <option value="reps_desc" {% if filters.sort=='reps_desc' %}selected{% endif %}>Más Reps</option>
+        </select>
+
+        <button type="submit" class="btn-small" style="background-color: #2196F3;">Filtrar 🔍</button>
+        <a href="/workouts" class="btn-small" style="background-color: #777; text-decoration: none;">Limpiar</a>
+    </form>
+</div>
+
+<div class="table-wrapper">
+    <table class="table-custom">
+        <thead>
+            <tr>
+                <th>Fecha Sesión</th>
+                <th>Notas</th>
+                <th>Grupo Muscular</th>
+                <th>Ejercicio</th>
+                <th>Series</th>
+                <th>Reps</th>
+                <th>Peso</th>
+                <th>Comentario</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for w in workouts %}
+            <tr>
+                <td>{{ w[0] }}</td>
+                <td>{{ w[8] }}</td>
+                <td>{{ w[1] if w[1] is not none else '-' }}</td>
+                <td>
+                    {% if w[9] %}
+                    <a href="/history/{{ w[9] }}" style="color: #4CAF50; text-decoration: none; font-weight: bold;">{{
+                        w[2] }}</a>
+                    {% else %}
+                    {{ w[2] if w[2] is not none else '-' }}
+                    {% endif %}
+                </td>
+                <td>{{ w[3] if w[3] is not none else '-' }}</td>
+                <td>{{ w[4] if w[4] is not none else '-' }}</td>
+                <td>{{ w[5] if w[5] is not none else '-' }}</td>
+                <td>{{ w[6] if w[6] is not none else '-' }}</td>
+                <td style="white-space: nowrap;">
+                    <a class="btn" href="/workouts/edit/{{ w[7] }}" title="Editar">✏️</a>
+                    <a class="btn btn-danger" href="/workouts/delete/{{ w[7] }}" title="Eliminar"
+                        onclick="return confirm('¿Estás seguro?')">🗑️</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ titulo }}</h2>
+
+<form method="POST">
+    <div class="form-group">
+        <label>Notas:</label>
+        <textarea name="notas"
+            rows="4">{% if datos is mapping %}{{ datos.notas }}{% else %}{{ datos }}{% endif %}</textarea>
+    </div>
+
+    {% if ejercicios %}
+    <hr>
+    <h3>{% if datos is mapping and datos.exercise_id %}Editar Ejercicio{% else %}Agregar Primer Ejercicio (Opcional){%
+        endif %}</h3>
+
+    <div class="form-group">
+        <label>Grupo Muscular:</label>
+        <select id="grupo_muscular" onchange="filterExercises()">
+            <option value="">-- Seleccionar Grupo --</option>
+            {% for grupo in ejercicios.keys() %}
+            <option value="{{ grupo }}">{{ grupo }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Ejercicio:</label>
+        <select name="exercise_id" id="exercise_id">
+            <option value="">-- Primero selecciona un grupo --</option>
+        </select>
+    </div>
+
+    <script>
+        // Datos de ejercicios pasados desde Flask
+        const exercisesData = {
+            {% for grupo, lista in ejercicios.items() %}
+        "{{ grupo }}": [
+            {% for e in lista %}
+        { id: {% if e is mapping %}{{ e.id }}{% else %}{{ e[0] }}{% endif %}, name: "{% if e is mapping %}{{ e.nombre }}{% else %}{{ e[2] }}{% endif %}" },
+        {% endfor %}
+            ],
+        {% endfor %}
+        };
+        console.log("Exercises Data:", exercisesData);
+
+        // Ejercicio pre-seleccionado (si estamos editando)
+        const selectedExerciseId = {% if datos is mapping and datos.exercise_id %}{{ datos.exercise_id }}{% else %}null{% endif %};
+
+        function filterExercises() {
+            const grupoSelect = document.getElementById("grupo_muscular");
+            const exerciseSelect = document.getElementById("exercise_id");
+            const selectedGrupo = grupoSelect.value;
+
+            // Limpiar dropdown de ejercicios
+            exerciseSelect.innerHTML = '<option value="">-- Seleccionar Ejercicio --</option>';
+
+            if (selectedGrupo && exercisesData[selectedGrupo]) {
+                exercisesData[selectedGrupo].forEach(ex => {
+                    const option = document.createElement("option");
+                    option.value = ex.id;
+                    option.textContent = ex.name;
+                    exerciseSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Inicializar si hay un ejercicio seleccionado
+        window.onload = function () {
+            if (selectedExerciseId) {
+                // Buscar a qué grupo pertenece el ejercicio seleccionado
+                let foundGroup = null;
+                for (const [grupo, exercises] of Object.entries(exercisesData)) {
+                    if (exercises.find(e => e.id === selectedExerciseId)) {
+                        foundGroup = grupo;
+                        break;
+                    }
+                }
+
+                if (foundGroup) {
+                    document.getElementById("grupo_muscular").value = foundGroup;
+                    filterExercises(); // Llenar el segundo select
+                    document.getElementById("exercise_id").value = selectedExerciseId; // Seleccionar el ejercicio
+                }
+            }
+        };
+    </script>
+
+    <div class="form-group">
+        <label>Series:</label>
+        <input type="number" name="series" value="{% if datos is mapping %}{{ datos.series }}{% else %}0{% endif %}">
+    </div>
+
+    <div class="form-group">
+        <label>Reps:</label>
+        <input type="number" name="reps" value="{% if datos is mapping %}{{ datos.reps }}{% else %}0{% endif %}">
+    </div>
+
+    <div class="form-group">
+        <label>Peso (kg):</label>
+        <input type="number" step="0.1" name="peso"
+            value="{% if datos is mapping %}{{ datos.peso }}{% else %}0{% endif %}">
+    </div>
+
+    <div class="form-group">
+        <label>Comentario:</label>
+        <textarea name="comentario">{% if datos is mapping %}{{ datos.comentario }}{% else %}-{% endif %}</textarea>
+    </div>
+    {% endif %}
+
+    <button class="btn" type="submit">Guardar</button>
+    <a href="/workouts" class="btn btn-secondary">Cancelar</a>
+</form>
+
+{% endblock %}

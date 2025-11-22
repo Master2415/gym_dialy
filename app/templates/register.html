@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-container">
+    <h2 class="auth-title">Registro</h2>
+
+    <form method="POST">
+        <div class="form-group">
+            <label>Nombre Completo:</label>
+            <input type="text" name="full_name" required>
+        </div>
+
+        <div class="form-group">
+            <label>Correo Electrónico:</label>
+            <input type="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label>Usuario:</label>
+            <input type="text" name="username" required>
+        </div>
+
+        <div class="form-group">
+            <label>Contraseña:</label>
+            <input type="password" name="password" required>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; margin-top: 20px; font-size: 1.1em;">Registrarse
+            ✨</button>
+    </form>
+
+    <p style="text-align: center; margin-top: 20px; color: var(--secondary-color);">
+        ¿Ya tienes cuenta? <a href="/login" style="color: var(--primary-color);">Inicia Sesión</a>
+    </p>
+</div>
+{% endblock %}

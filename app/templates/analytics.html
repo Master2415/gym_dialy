@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Visualización y Análisis de Progreso</h2>
+
+<div style="display: flex; flex-wrap: wrap; gap: 20px;">
+    <!-- Tabla de Récords Personales (PR) -->
+    <div style="flex: 1; min-width: 300px; background: #222; padding: 20px; border-radius: 8px;">
+        <h3>Récords Personales (PR) 🏆</h3>
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Ejercicio</th>
+                    <th>Max Peso</th>
+                    <th>1RM Est.</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pr in personal_records %}
+                <tr>
+                    <td>{{ pr.nombre }}</td>
+                    <td>{{ pr.max_peso }} kg</td>
+                    <td>{{ pr.one_rm }} kg</td>
+                    <td>{{ pr.fecha }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<br>
+<div style="display: flex; gap: 20px; flex-wrap: wrap;">
+    <!-- Gráfico de Progreso (Peso) -->
+    <div style="flex: 1; min-width: 300px; background: #222; padding: 20px; border-radius: 8px;">
+        <h3>Progreso de Peso (Top 5 Ejercicios) 📈</h3>
+        <canvas id="progressChart"></canvas>
+    </div>
+
+    <!-- Gráfico de Volumen (Últimos 30 días) -->
+    <div style="flex: 1; min-width: 300px; background: #222; padding: 20px; border-radius: 8px;">
+        <h3>Volumen por Grupo Muscular (30 días) 📊</h3>
+        <canvas id="volumeChart"></canvas>
+    </div>
+</div>
+
+<br><br>
+<a href="/workouts" class="btn">Volver a Sesiones</a>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // --- GRÁFICO DE PROGRESO ---
+    const chartData = {{ chart_data | tojson }};
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    const datasets = [];
+    const colors = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF'];
+    let i = 0;
+
+    for (const [label, data] of Object.entries(chartData)) {
+        datasets.push({
+            label: label,
+            data: data,
+            borderColor: colors[i % colors.length],
+            fill: false,
+            tension: 0.1
+        });
+        i++;
+    }
+
+    new Chart(ctx, {
+        type: 'line',
+        data: { datasets: datasets },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    type: 'category', // Usar categoría para fechas simples
+                    title: { display: true, text: 'Fecha' }
+                },
+                y: {
+                    title: { display: true, text: 'Peso (kg)' }
+                }
+            }
+        }
+    });
+
+    // --- GRÁFICO DE VOLUMEN ---
+    const volumeData = {{ volume_data | tojson }};
+    const ctxVol = document.getElementById('volumeChart').getContext('2d');
+
+    new Chart(ctxVol, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(volumeData),
+            datasets: [{
+                data: Object.values(volumeData),
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

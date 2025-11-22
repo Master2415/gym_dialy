@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Historial: {{ exercise_name }} 🏋️</h2>
+
+<div style="background: #222; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+    <canvas id="historyChart"></canvas>
+</div>
+
+<div class="table-wrapper">
+    <table class="table-custom">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Series</th>
+                <th>Reps</th>
+                <th>Peso</th>
+                <th>1RM Est.</th>
+                <th>Volumen</th>
+                <th>Comentario</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in history %}
+            <tr>
+                <td>{{ h[0] }}</td>
+                <td>{{ h[1] }}</td>
+                <td>{{ h[2] }}</td>
+                <td>{{ h[3] }} kg</td>
+                <td>{{ h[5] | round(1) }} kg</td>
+                <td>{{ h[6] | round(1) }} kg</td>
+                <td>{{ h[4] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<br>
+<a href="/workouts" class="btn">Volver a Sesiones</a>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const chartData = {{ chart_data | tojson }};
+    const ctx = document.getElementById('historyChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: 'Peso (kg)',
+                    data: chartData['Peso'],
+                    borderColor: '#36A2EB',
+                    backgroundColor: '#36A2EB',
+                    tension: 0.1
+                },
+                {
+                    label: '1RM Estimado (kg)',
+                    data: chartData['1RM'],
+                    borderColor: '#FF6384',
+                    backgroundColor: '#FF6384',
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    type: 'category',
+                    title: { display: true, text: 'Fecha' }
+                },
+                y: {
+                    title: { display: true, text: 'Peso (kg)' }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
