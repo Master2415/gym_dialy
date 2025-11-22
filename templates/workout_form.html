@@ -15,15 +15,75 @@
         endif %}</h3>
 
     <div class="form-group">
-        <label>Ejercicio:</label>
-        <select name="exercise_id">
-            <option value="">-- Seleccionar --</option>
-            {% for e in ejercicios %}
-            <option value="{{ e[0] }}" {% if datos is mapping and datos.exercise_id==e[0] %}selected{% endif %}>{{ e[3]
-                }} ({{ e[2] }})</option>
+        <label>Grupo Muscular:</label>
+        <select id="grupo_muscular" onchange="filterExercises()">
+            <option value="">-- Seleccionar Grupo --</option>
+            {% for grupo in ejercicios.keys() %}
+            <option value="{{ grupo }}">{{ grupo }}</option>
             {% endfor %}
         </select>
     </div>
+
+    <div class="form-group">
+        <label>Ejercicio:</label>
+        <select name="exercise_id" id="exercise_id">
+            <option value="">-- Primero selecciona un grupo --</option>
+        </select>
+    </div>
+
+    <script>
+        // Datos de ejercicios pasados desde Flask
+        const exercisesData = {
+            {% for grupo, lista in ejercicios.items() %}
+            "{{ grupo }}": [
+                {% for e in lista %}
+                { id: {{ e[0] }}, name: "{{ e[3] }}" },
+                {% endfor %}
+            ],
+            {% endfor %}
+        };
+
+        // Ejercicio pre-seleccionado (si estamos editando)
+        const selectedExerciseId = {% if datos is mapping and datos.exercise_id %}{{ datos.exercise_id }}{% else %}null{% endif %};
+
+        function filterExercises() {
+            const grupoSelect = document.getElementById("grupo_muscular");
+            const exerciseSelect = document.getElementById("exercise_id");
+            const selectedGrupo = grupoSelect.value;
+
+            // Limpiar dropdown de ejercicios
+            exerciseSelect.innerHTML = '<option value="">-- Seleccionar Ejercicio --</option>';
+
+            if (selectedGrupo && exercisesData[selectedGrupo]) {
+                exercisesData[selectedGrupo].forEach(ex => {
+                    const option = document.createElement("option");
+                    option.value = ex.id;
+                    option.textContent = ex.name;
+                    exerciseSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Inicializar si hay un ejercicio seleccionado
+        window.onload = function() {
+            if (selectedExerciseId) {
+                // Buscar a qué grupo pertenece el ejercicio seleccionado
+                let foundGroup = null;
+                for (const [grupo, exercises] of Object.entries(exercisesData)) {
+                    if (exercises.find(e => e.id === selectedExerciseId)) {
+                        foundGroup = grupo;
+                        break;
+                    }
+                }
+
+                if (foundGroup) {
+                    document.getElementById("grupo_muscular").value = foundGroup;
+                    filterExercises(); // Llenar el segundo select
+                    document.getElementById("exercise_id").value = selectedExerciseId; // Seleccionar el ejercicio
+                }
+            }
+        };
+    </script>
 
     <div class="form-group">
         <label>Series:</label>
