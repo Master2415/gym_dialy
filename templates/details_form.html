@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Agregar Ejercicio</h2>
+
+{% if ejercicios %}
+<form method="POST">
+    <div class="form-group">
+        <label>Ejercicio:</label>
+        <select name="exercise_id">
+            {% for e in ejercicios %}
+            <option value="{{ e[0] }}">{{ e[2] }} ({{ e[1] }})</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Series:</label>
+        <input type="number" name="series">
+    </div>
+
+    <div class="form-group">
+        <label>Reps:</label>
+        <input type="number" name="reps">
+    </div>
+
+    <div class="form-group">
+        <label>Peso (kg):</label>
+        <input type="number" step="0.1" name="peso">
+    </div>
+
+    <div class="form-group">
+        <label>Comentario:</label>
+        <textarea name="comentario"></textarea>
+    </div>
+
+    <button class="btn" type="submit">Guardar</button>
+    <a href="/workouts" class="btn btn-secondary">Cancelar</a>
+</form>
+{% else %}
+<p>No hay ejercicios registrados. Por favor contacta al administrador para agregar ejercicios.</p>
+{% endif %}
+
+{% endblock %}

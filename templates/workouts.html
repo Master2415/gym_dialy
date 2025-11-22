@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Sesiones</h2>
+
+<a class="btn" href="/workouts/new">Nueva sesión</a>
+<br><br>
+
+<div class="table-wrapper">
+    <table class="table-custom">
+        <thead>
+            <tr>
+                <th>Fecha Sesión</th>
+                <th>Notas</th>
+                <th>Grupo Muscular</th>
+                <th>Ejercicio</th>
+                <th>Series</th>
+                <th>Reps</th>
+                <th>Peso</th>
+                <th>Comentario</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for w in workouts %}
+            <tr>
+                <td>{{ w[0] }}</td>
+                <td>{{ w[8] }}</td>
+                <td>{{ w[1] if w[1] is not none else '-' }}</td>
+                <td>{{ w[2] if w[2] is not none else '-' }}</td>
+                <td>{{ w[3] if w[3] is not none else '-' }}</td>
+                <td>{{ w[4] if w[4] is not none else '-' }}</td>
+                <td>{{ w[5] if w[5] is not none else '-' }}</td>
+                <td>{{ w[6] if w[6] is not none else '-' }}</td>
+                <td style="white-space: nowrap;">
+                    <a class="btn" href="/workouts/{{ w[7] }}/details" title="Detalles">📄</a>
+                    <a class="btn" href="/workouts/edit/{{ w[7] }}" title="Editar">✏️</a>
+                    <a class="btn btn-danger" href="/workouts/delete/{{ w[7] }}" title="Eliminar"
+                        onclick="return confirm('¿Estás seguro?')">🗑️</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

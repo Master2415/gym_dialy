@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Ejercicios</h2>
+
+<ul>
+{% for e in ejercicios %}
+<li><b>{{ e[2] }}</b> — {{ e[1] }}</li>
+{% endfor %}
+</ul>
+
+{% endblock %}
