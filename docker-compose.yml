@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: gym_daily_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: gym_daily
+      MYSQL_USER: gym_user
+      MYSQL_PASSWORD: gym_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - gym_network
+
+  web:
+    build: .
+    container_name: gym_daily_web
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: db
+      DB_USER: gym_user
+      DB_PASSWORD: gym_password
+      DB_NAME: gym_daily
+    depends_on:
+      - db
+    networks:
+      - gym_network
+    volumes:
+      - ./app:/app/app
+      - ./gym_daily.db:/app/gym_daily.db
+
+volumes:
+  mysql_data:
+
+networks:
+  gym_network:
+    driver: bridge

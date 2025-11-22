@@ -1,0 +1,133 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# ===========================
+# Databases (IMPORTANTE)
+# ===========================
+*.db
+*.sqlite
+*.sqlite3
+gym_daily.db
+
+# ===========================
+# Environment Variables
+# ===========================
+.env
+.env.local
+.env.*.local
+*.env
+
+# ===========================
+# IDE / Editors
+# ===========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ===========================
+# Logs
+# ===========================
+*.log
+logs/
+*.log.*
+
+# ===========================
+# OS
+# ===========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===========================
+# Backups y Exports
+# ===========================
+*.bak
+*.backup
+*.csv
+*.json
+backups/
+exports/
+
+# ===========================
+# Testing
+# ===========================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+*.cover
+
+# ===========================
+# Distribution / Packaging
+# ===========================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ===========================
+# Docker (opcional)
+# ===========================
+# Descomentar si no quieres versionar estos archivos
+# docker-compose.override.yml
+# .dockerignore
+
+# ===========================
+# Archivos de Verificación
+# ===========================
+verify_*.py
+
+# ===========================
+# Datos Sensibles
+# ===========================
+# Archivos de configuración con credenciales
+config.ini
+secrets.yaml
+credentials.json
+
+# Archivos de usuarios (si existen)
+users.json
+user_data/
+
+# ===========================
+# Temporal
+# ===========================
+tmp/
+temp/
+*.tmp
+
+# ===========================
+# Git
+# ===========================
+*.orig
+*.rej
+
+# ===========================
+# Específico del Proyecto
+# ===========================
+# Semillas de datos personales
+# seed_exercises.py  # Descomentar si tiene datos personales
+
+# Screenshots (si contienen datos personales)
+# docs/images/  # Descomentar si las capturas muestran datos reales
