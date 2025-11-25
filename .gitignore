@@ -131,3 +131,4 @@ temp/
 
 # Screenshots (si contienen datos personales)
 # docs/images/  # Descomentar si las capturas muestran datos reales
+verify_template_fix.py

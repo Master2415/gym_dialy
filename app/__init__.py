@@ -1,20 +1,28 @@
 from flask import Flask
 from .db import get_connection
+import os
 
 def create_app():
     app = Flask(__name__)
-    app.secret_key = "super_secret_key"  # Change this in production
+    app.secret_key = os.environ.get("SECRET_KEY", "super_secret_key")  # Change this in production
+
+    # Configure OAuth
+    app.config['GOOGLE_CLIENT_ID'] = os.environ.get("GOOGLE_CLIENT_ID", "YOUR_GOOGLE_CLIENT_ID")
+    app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get("GOOGLE_CLIENT_SECRET", "YOUR_GOOGLE_CLIENT_SECRET")
+    app.config['GOOGLE_DISCOVERY_URL'] = "https://accounts.google.com/.well-known/openid-configuration"
 
     # Register Blueprints
     from .routes.auth import auth_bp
     from .routes.workouts import workouts_bp
     from .routes.analytics import analytics_bp
     from .routes.export import export_bp
+    from .routes.exercises import exercises_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(workouts_bp)
     app.register_blueprint(analytics_bp)
     app.register_blueprint(export_bp)
+    app.register_blueprint(exercises_bp)
 
     # Initialize DB
     init_db()

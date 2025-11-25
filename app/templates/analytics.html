@@ -4,7 +4,8 @@
 
 <div style="display: flex; flex-wrap: wrap; gap: 20px;">
     <!-- Tabla de Récords Personales (PR) -->
-    <div style="flex: 1; min-width: 300px; background: #222; padding: 20px; border-radius: 8px;">
+    <div
+        style="flex: 1; min-width: 300px; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
         <h3>Récords Personales (PR) 🏆</h3>
         <table class="table-custom">
             <thead>
@@ -32,13 +33,15 @@
 <br>
 <div style="display: flex; gap: 20px; flex-wrap: wrap;">
     <!-- Gráfico de Progreso (Peso) -->
-    <div style="flex: 1; min-width: 300px; background: #222; padding: 20px; border-radius: 8px;">
+    <div
+        style="flex: 1; min-width: 300px; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
         <h3>Progreso de Peso (Top 5 Ejercicios) 📈</h3>
         <canvas id="progressChart"></canvas>
     </div>
 
     <!-- Gráfico de Volumen (Últimos 30 días) -->
-    <div style="flex: 1; min-width: 300px; background: #222; padding: 20px; border-radius: 8px;">
+    <div
+        style="flex: 1; min-width: 300px; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
         <h3>Volumen por Grupo Muscular (30 días) 📊</h3>
         <canvas id="volumeChart"></canvas>
     </div>
@@ -51,6 +54,43 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+    // Helper to get CSS variable value
+    function getCssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    // Function to update chart colors based on theme
+    function getChartOptions(title) {
+        const textColor = getCssVar('--text-color');
+        const gridColor = getCssVar('--border-color');
+
+        return {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { color: textColor }
+                },
+                title: {
+                    display: !!title,
+                    text: title,
+                    color: textColor
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: textColor },
+                    grid: { color: gridColor },
+                    title: { display: true, text: 'Fecha', color: textColor }
+                },
+                y: {
+                    ticks: { color: textColor },
+                    grid: { color: gridColor },
+                    title: { display: true, text: 'Peso (kg)', color: textColor }
+                }
+            }
+        };
+    }
+
     // --- GRÁFICO DE PROGRESO ---
     const chartData = {{ chart_data | tojson }};
     const ctx = document.getElementById('progressChart').getContext('2d');
@@ -69,28 +109,17 @@
         i++;
     }
 
-    new Chart(ctx, {
+    const progressChart = new Chart(ctx, {
         type: 'line',
         data: { datasets: datasets },
-        options: {
-            responsive: true,
-            scales: {
-                x: {
-                    type: 'category', // Usar categoría para fechas simples
-                    title: { display: true, text: 'Fecha' }
-                },
-                y: {
-                    title: { display: true, text: 'Peso (kg)' }
-                }
-            }
-        }
+        options: getChartOptions()
     });
 
     // --- GRÁFICO DE VOLUMEN ---
     const volumeData = {{ volume_data | tojson }};
     const ctxVol = document.getElementById('volumeChart').getContext('2d');
 
-    new Chart(ctxVol, {
+    const volumeChart = new Chart(ctxVol, {
         type: 'doughnut',
         data: {
             labels: Object.keys(volumeData),
@@ -98,7 +127,9 @@
                 data: Object.values(volumeData),
                 backgroundColor: [
                     '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-                ]
+                ],
+                borderColor: getCssVar('--card-bg'),
+                borderWidth: 2
             }]
         },
         options: {
@@ -106,9 +137,13 @@
             plugins: {
                 legend: {
                     position: 'right',
+                    labels: { color: getCssVar('--text-color') }
                 }
             }
         }
     });
+
+    // Optional: Update charts if theme changes (if you have a theme toggler that changes classes)
+    // For now, this works on page load.
 </script>
 {% endblock %}

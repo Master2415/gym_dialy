@@ -68,28 +68,52 @@ h2 {
 
 button,
 .btn {
-    background: var(--primary-color);
+    background-color: var(--primary-color);
     color: white;
-    padding: 8px 12px;
+    padding: 10px 16px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     text-decoration: none;
-    display: inline-block;
-    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background-color 0.2s, transform 0.1s;
+    gap: 8px;
+}
+
+.btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
 }
 
 .btn-danger {
-    background: var(--danger-color);
+    background-color: var(--danger-color);
 }
 
 .btn-secondary {
     background-color: var(--secondary-color);
-    margin-left: 10px;
+    color: white;
 }
 
 .btn-secondary:hover {
     background-color: var(--secondary-hover);
+}
+
+.btn-sm {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    border-radius: 4px;
 }
 
 /* Table Styles */

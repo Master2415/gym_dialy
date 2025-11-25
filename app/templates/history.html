@@ -2,7 +2,8 @@
 {% block content %}
 <h2>Historial: {{ exercise_name }} 🏋️</h2>
 
-<div style="background: #222; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+<div
+    style="background: var(--card-bg); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border-color);">
     <canvas id="historyChart"></canvas>
 </div>
 
@@ -12,11 +13,10 @@
             <tr>
                 <th>Fecha</th>
                 <th>Series</th>
-                <th>Reps</th>
-                <th>Peso</th>
+                <th>Total Reps</th>
+                <th>Max Peso</th>
                 <th>1RM Est.</th>
-                <th>Volumen</th>
-                <th>Comentario</th>
+                <th>Detalle (Reps x Peso)</th>
             </tr>
         </thead>
         <tbody>
@@ -27,7 +27,6 @@
                 <td>{{ h[2] }}</td>
                 <td>{{ h[3] }} kg</td>
                 <td>{{ h[5] | round(1) }} kg</td>
-                <td>{{ h[6] | round(1) }} kg</td>
                 <td>{{ h[4] }}</td>
             </tr>
             {% endfor %}

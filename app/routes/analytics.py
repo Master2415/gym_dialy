@@ -12,16 +12,18 @@ def analytics():
     cur = conn.cursor()
     
     # 1. Récords Personales (PR) - Max peso y 1RM Estimado
+    # Updated to use workout_series
     cur.execute("""
         SELECT 
             e.nombre, 
-            MAX(wd.peso) as max_peso, 
-            MAX(wd.peso * (1 + wd.reps/30)) as estimated_1rm,
+            MAX(ws.peso) as max_peso, 
+            MAX(ws.peso * (1 + ws.reps/30)) as estimated_1rm,
             DATE_FORMAT(MAX(w.fecha), '%Y-%m-%d') as fecha
-        FROM workout_details wd
+        FROM workout_series ws
+        JOIN workout_details wd ON ws.workout_detail_id = wd.id
         JOIN workouts w ON wd.workout_id = w.id
         JOIN exercises e ON wd.exercise_id = e.id
-        WHERE w.user_id = %s AND wd.peso > 0
+        WHERE w.user_id = %s AND ws.peso > 0
         GROUP BY e.id, e.nombre
         ORDER BY estimated_1rm DESC
         LIMIT 10
@@ -44,12 +46,15 @@ def analytics():
     
     if top_exercises:
         format_strings = ','.join(['%s'] * len(top_exercises))
+        # Get max weight per workout for these exercises
         query = f"""
-            SELECT e.nombre, w.fecha, wd.peso
-            FROM workout_details wd
+            SELECT e.nombre, w.fecha, MAX(ws.peso)
+            FROM workout_series ws
+            JOIN workout_details wd ON ws.workout_detail_id = wd.id
             JOIN workouts w ON wd.workout_id = w.id
             JOIN exercises e ON wd.exercise_id = e.id
-            WHERE w.user_id = %s AND wd.exercise_id IN ({format_strings}) AND wd.peso > 0
+            WHERE w.user_id = %s AND wd.exercise_id IN ({format_strings}) AND ws.peso > 0
+            GROUP BY w.id, e.nombre, w.fecha
             ORDER BY w.fecha ASC
         """
         params = [session['user_id']] + top_exercises
@@ -69,14 +74,15 @@ def analytics():
     # 3. Volumen por Grupo Muscular (Últimos 30 días)
     thirty_days_ago = datetime.date.today() - datetime.timedelta(days=30)
     cur.execute("""
-        SELECT e.grupo_muscular, SUM(wd.series * wd.reps * wd.peso) as volumen
-        FROM workout_details wd
+        SELECT e.grupo_muscular, SUM(ws.reps * ws.peso) as volumen
+        FROM workout_series ws
+        JOIN workout_details wd ON ws.workout_detail_id = wd.id
         JOIN workouts w ON wd.workout_id = w.id
         JOIN exercises e ON wd.exercise_id = e.id
         WHERE w.user_id = %s AND w.fecha >= %s
         GROUP BY e.grupo_muscular
     """, (session['user_id'], thirty_days_ago))
-    volume_data = {row[0]: float(row[1]) for row in cur.fetchall()}
+    volume_data = {row[0]: float(row[1]) for row in cur.fetchall() if row[1] is not None}
             
     conn.close()
     
@@ -147,19 +153,20 @@ def history(exercise_id):
     cur.execute("SELECT nombre FROM exercises WHERE id = %s", (exercise_id,))
     exercise_name = cur.fetchone()[0]
     
-    # Obtener historial completo
+    # Obtener historial completo (Max weight per session)
     cur.execute("""
         SELECT 
             w.fecha,
-            wd.series,
-            wd.reps,
-            wd.peso,
-            wd.comentario,
-            (wd.peso * (1 + wd.reps/30)) as estimated_1rm,
-            (wd.series * wd.reps * wd.peso) as volumen
-        FROM workout_details wd
+            COUNT(ws.id) as series,
+            SUM(ws.reps) as total_reps,
+            MAX(ws.peso) as max_peso,
+            GROUP_CONCAT(CONCAT(ws.reps, 'x', ws.peso, 'kg') SEPARATOR ', ') as detalle,
+            MAX(ws.peso * (1 + ws.reps/30)) as estimated_1rm
+        FROM workout_series ws
+        JOIN workout_details wd ON ws.workout_detail_id = wd.id
         JOIN workouts w ON wd.workout_id = w.id
         WHERE wd.exercise_id = %s AND w.user_id = %s
+        GROUP BY w.id, w.fecha
         ORDER BY w.fecha DESC
     """, (exercise_id, session['user_id']))
     history_data = cur.fetchall()
@@ -172,8 +179,8 @@ def history(exercise_id):
     
     for row in reversed(history_data):
         date = row[0].strftime('%Y-%m-%d')
-        weight = float(row[3])
-        one_rm = float(row[5])
+        weight = float(row[3]) if row[3] else 0
+        one_rm = float(row[5]) if row[5] else 0
         
         chart_data['Peso'].append({'x': date, 'y': weight})
         chart_data['1RM'].append({'x': date, 'y': round(one_rm, 1)})

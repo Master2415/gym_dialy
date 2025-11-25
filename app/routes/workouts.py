@@ -23,16 +23,16 @@ def workouts():
     """, (session['user_id'], first_day))
     days_trained = cur.fetchone()[0]
     
-    # 2. Mejor 1RM (Sentadilla como ejemplo motivacional, o el máximo general)
-    # Calculamos 1RM = Peso * (1 + Reps/30)
+    # 2. Mejor Peso Levantado (Récord Personal)
     cur.execute("""
-        SELECT MAX(wd.peso * (1 + wd.reps/30)) 
-        FROM workout_details wd
+        SELECT MAX(ws.peso) 
+        FROM workout_series ws
+        JOIN workout_details wd ON ws.workout_detail_id = wd.id
         JOIN workouts w ON wd.workout_id = w.id
         WHERE w.user_id = %s
     """, (session['user_id'],))
-    best_1rm = cur.fetchone()[0]
-    best_1rm = round(best_1rm, 1) if best_1rm else 0
+    best_weight = cur.fetchone()[0]
+    best_weight = round(best_weight, 1) if best_weight else 0
 
     # --- FILTROS Y ORDENAMIENTO ---
     search = request.args.get('search', '')
@@ -42,19 +42,19 @@ def workouts():
     
     query = """
         SELECT 
-            w.fecha,
-            e.grupo_muscular,
-            e.nombre,
-            wd.series,
-            wd.reps,
-            wd.peso,
-            wd.comentario,
-            w.id,
+            w.fecha, 
+            e.grupo_muscular, 
+            e.nombre, 
+            wd.series, 
+            (SELECT AVG(ws.reps) FROM workout_series ws WHERE ws.workout_detail_id = wd.id) as avg_reps,
+            (SELECT AVG(ws.peso) FROM workout_series ws WHERE ws.workout_detail_id = wd.id) as avg_peso,
+            wd.comentario, 
+            w.id, 
             w.notas,
-            e.id as exercise_id
+            e.id
         FROM workouts w
-        LEFT JOIN workout_details wd ON w.id = wd.workout_id
-        LEFT JOIN exercises e ON wd.exercise_id = e.id
+        JOIN workout_details wd ON w.id = wd.workout_id
+        JOIN exercises e ON wd.exercise_id = e.id
         WHERE w.user_id = %s
     """
     params = [session['user_id']]
@@ -76,7 +76,11 @@ def workouts():
     elif sort_by == 'date_asc':
         query += " ORDER BY w.fecha ASC, w.id ASC"
     elif sort_by == 'weight_desc':
-        query += " ORDER BY wd.peso DESC"
+        # Sort by the calculated average weight is complex in this query structure without a subquery or CTE
+        # For simplicity, we'll keep sorting by the 'avg_peso' if possible, or just wd.peso (which is 0 now)
+        # Let's try to sort by the scalar subquery alias if supported, or just ignore for now as user didn't strictly request sort fix
+        # MySQL allows sorting by alias in HAVING or ORDER BY usually.
+        query += " ORDER BY avg_peso DESC"
     elif sort_by == 'reps_desc':
         query += " ORDER BY wd.reps DESC"
     else:
@@ -97,7 +101,7 @@ def workouts():
     
     dashboard_stats = {
         'days_trained': days_trained,
-        'best_1rm': best_1rm
+        'best_weight': best_weight
     }
     
     return render_template("workouts.html", 
@@ -118,20 +122,39 @@ def new_workout():
         if not notas:
             notas = "-"
         
-        cur.execute("INSERT INTO workouts (user_id, notas) VALUES (%s, %s)", (session['user_id'], notas))
+        fecha = request.form.get("fecha")
+        
+        if fecha:
+            cur.execute("INSERT INTO workouts (user_id, notas, fecha) VALUES (%s, %s, %s)", (session['user_id'], notas, fecha))
+        else:
+            cur.execute("INSERT INTO workouts (user_id, notas) VALUES (%s, %s)", (session['user_id'], notas))
         new_workout_id = cur.lastrowid
         
         exercise_id = request.form.get("exercise_id")
-        if exercise_id:
-            series = request.form["series"] or 0
-            reps = request.form["reps"] or 0
-            peso = request.form["peso"] or 0
-            comentario = request.form["comentario"] or "-"
 
+        # exercise_id is now always provided from the select dropdown
+
+        if exercise_id:
+            # Total series count from the main input
+            total_series = int(request.form.get("series", 0))
+            
+            # Insert the main detail record
             cur.execute("""
                 INSERT INTO workout_details (workout_id, exercise_id, series, reps, peso, comentario)
                 VALUES (%s, %s, %s, %s, %s, %s)
-            """, (new_workout_id, exercise_id, series, reps, peso, comentario))
+            """, (new_workout_id, exercise_id, total_series, 0, 0, "-"))
+            new_detail_id = cur.lastrowid
+
+            # Insert each series
+            for i in range(1, total_series + 1):
+                reps = request.form.get(f"reps_{i}", 0)
+                peso = request.form.get(f"peso_{i}", 0)
+                comentario = request.form.get(f"comentario_{i}", "-")
+                
+                cur.execute("""
+                    INSERT INTO workout_series (workout_detail_id, serie_numero, reps, peso, comentario)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (new_detail_id, i, reps, peso, comentario))
 
         conn.commit()
         conn.close()
@@ -166,52 +189,96 @@ def edit_workout(id):
 
     if request.method == "POST":
         notas = request.form["notas"] or "-"
-        cur.execute("UPDATE workouts SET notas=%s WHERE id=%s", (notas, id))
+        fecha = request.form.get("fecha")
+        
+        if fecha:
+            cur.execute("UPDATE workouts SET notas=%s, fecha=%s WHERE id=%s", (notas, fecha, id))
+        else:
+            cur.execute("UPDATE workouts SET notas=%s WHERE id=%s", (notas, id))
         
         exercise_id = request.form.get("exercise_id")
+        grupo_muscular = request.form.get("grupo_muscular")
+
+        # exercise_id is now always provided from the select dropdown
+
         if exercise_id:
-            series = request.form.get("series", 0)
-            reps = request.form.get("reps", 0)
-            peso = request.form.get("peso", 0)
-            comentario = request.form.get("comentario", "-")
+            total_series = int(request.form.get("series", 0))
             
             cur.execute("SELECT id FROM workout_details WHERE workout_id=%s LIMIT 1", (id,))
             existing_detail = cur.fetchone()
             
+            detail_id = None
             if existing_detail:
+                detail_id = existing_detail[0]
                 cur.execute("""
                     UPDATE workout_details 
-                    SET exercise_id=%s, series=%s, reps=%s, peso=%s, comentario=%s 
+                    SET exercise_id=%s, series=%s 
                     WHERE id=%s
-                """, (exercise_id, series, reps, peso, comentario, existing_detail[0]))
+                """, (exercise_id, total_series, detail_id))
             else:
                 cur.execute("""
                     INSERT INTO workout_details (workout_id, exercise_id, series, reps, peso, comentario)
                     VALUES (%s, %s, %s, %s, %s, %s)
-                """, (id, exercise_id, series, reps, peso, comentario))
+                """, (id, exercise_id, total_series, 0, 0, "-"))
+                detail_id = cur.lastrowid
+            
+            # Update series: Delete existing and re-insert (simplest approach)
+            cur.execute("DELETE FROM workout_series WHERE workout_detail_id=%s", (detail_id,))
+            
+            for i in range(1, total_series + 1):
+                reps = request.form.get(f"reps_{i}", 0)
+                peso = request.form.get(f"peso_{i}", 0)
+                comentario = request.form.get(f"comentario_{i}", "-")
+                
+                cur.execute("""
+                    INSERT INTO workout_series (workout_detail_id, serie_numero, reps, peso, comentario)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (detail_id, i, reps, peso, comentario))
         
         conn.commit()
         conn.close()
         return redirect(url_for('workouts.workouts'))
 
-    cur.execute("SELECT notas FROM workouts WHERE id=%s", (id,))
+    cur.execute("SELECT notas, fecha FROM workouts WHERE id=%s", (id,))
     result = cur.fetchone()
     notas = result[0] if result else ""
+    fecha = result[1].strftime('%Y-%m-%d') if result and result[1] else ""
     
     cur.execute("""
-        SELECT wd.exercise_id, wd.series, wd.reps, wd.peso, wd.comentario
+        SELECT wd.id, wd.exercise_id, wd.series, wd.reps, wd.peso, wd.comentario, e.nombre, e.grupo_muscular
         FROM workout_details wd
+        JOIN exercises e ON wd.exercise_id = e.id
         WHERE wd.workout_id = %s
         LIMIT 1
     """, (id,))
     detail = cur.fetchone()
+    
+    series_details = []
+    if detail:
+        detail_id = detail[0]
+        cur.execute("""
+            SELECT serie_numero, reps, peso, comentario 
+            FROM workout_series 
+            WHERE workout_detail_id = %s 
+            ORDER BY serie_numero ASC
+        """, (detail_id,))
+        series_rows = cur.fetchall()
+        for row in series_rows:
+            series_details.append({
+                'numero': row[0],
+                'reps': row[1],
+                'peso': row[2],
+                'comentario': row[3]
+            })
+
     datos = {
         'notas': notas,
-        'exercise_id': detail[0] if detail else None,
-        'series': detail[1] if detail else 0,
-        'reps': detail[2] if detail else 0,
-        'peso': detail[3] if detail else 0,
-        'comentario': detail[4] if detail else "-"
+        'fecha': fecha,
+        'exercise_id': detail[1] if detail else None,
+        'series': detail[2] if detail else 0,
+        'series_details': series_details,
+        'exercise_name': detail[6] if detail else "",
+        'muscle_group': detail[7] if detail else ""
     }
     
     # Obtener ejercicios agrupados

@@ -4,6 +4,12 @@
 
 <form method="POST">
     <div class="form-group">
+        <label>Fecha:</label>
+        <input type="date" name="fecha" id="fecha_input"
+            value="{% if datos is mapping and datos.fecha %}{{ datos.fecha }}{% endif %}">
+    </div>
+
+    <div class="form-group">
         <label>Notas:</label>
         <textarea name="notas"
             rows="4">{% if datos is mapping %}{{ datos.notas }}{% else %}{{ datos }}{% endif %}</textarea>
@@ -16,7 +22,7 @@
 
     <div class="form-group">
         <label>Grupo Muscular:</label>
-        <select id="grupo_muscular" onchange="filterExercises()">
+        <select id="grupo_muscular" name="grupo_muscular" onchange="filterExercises()">
             <option value="">-- Seleccionar Grupo --</option>
             {% for grupo in ejercicios.keys() %}
             <option value="{{ grupo }}">{{ grupo }}</option>
@@ -26,8 +32,8 @@
 
     <div class="form-group">
         <label>Ejercicio:</label>
-        <select name="exercise_id" id="exercise_id">
-            <option value="">-- Primero selecciona un grupo --</option>
+        <select id="exercise_select" name="exercise_id">
+            <option value="">-- Primero selecciona un grupo muscular --</option>
         </select>
     </div>
 
@@ -37,7 +43,7 @@
             {% for grupo, lista in ejercicios.items() %}
         "{{ grupo }}": [
             {% for e in lista %}
-        { id: {% if e is mapping %}{{ e.id }}{% else %}{{ e[0] }}{% endif %}, name: "{% if e is mapping %}{{ e.nombre }}{% else %}{{ e[2] }}{% endif %}" },
+        { id: {{ e.id }}, name: "{{ e.nombre }}" },
         {% endfor %}
             ],
         {% endfor %}
@@ -46,14 +52,18 @@
 
         // Ejercicio pre-seleccionado (si estamos editando)
         const selectedExerciseId = {% if datos is mapping and datos.exercise_id %}{{ datos.exercise_id }}{% else %}null{% endif %};
+        const selectedMuscleGroup = "{% if datos is mapping and datos.muscle_group %}{{ datos.muscle_group }}{% endif %}";
+
+        console.log("Selected Exercise ID:", selectedExerciseId);
+        console.log("Selected Muscle Group:", selectedMuscleGroup);
 
         function filterExercises() {
             const grupoSelect = document.getElementById("grupo_muscular");
-            const exerciseSelect = document.getElementById("exercise_id");
+            const exerciseSelect = document.getElementById("exercise_select");
             const selectedGrupo = grupoSelect.value;
 
-            // Limpiar dropdown de ejercicios
-            exerciseSelect.innerHTML = '<option value="">-- Seleccionar Ejercicio --</option>';
+            // Limpiar select
+            exerciseSelect.innerHTML = '<option value="">-- Selecciona un ejercicio --</option>';
 
             if (selectedGrupo && exercisesData[selectedGrupo]) {
                 exercisesData[selectedGrupo].forEach(ex => {
@@ -66,10 +76,18 @@
         }
 
         // Inicializar si hay un ejercicio seleccionado
-        window.onload = function () {
+        window.addEventListener('DOMContentLoaded', function () {
+            // Set default date to today if empty
+            const fechaInput = document.getElementById('fecha_input');
+            if (!fechaInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                fechaInput.value = today;
+            }
+
             if (selectedExerciseId) {
                 // Buscar a qué grupo pertenece el ejercicio seleccionado
                 let foundGroup = null;
+
                 for (const [grupo, exercises] of Object.entries(exercisesData)) {
                     if (exercises.find(e => e.id === selectedExerciseId)) {
                         foundGroup = grupo;
@@ -79,33 +97,78 @@
 
                 if (foundGroup) {
                     document.getElementById("grupo_muscular").value = foundGroup;
-                    filterExercises(); // Llenar el segundo select
-                    document.getElementById("exercise_id").value = selectedExerciseId; // Seleccionar el ejercicio
+                    filterExercises();
+                    // Wait a bit for the options to be populated
+                    setTimeout(() => {
+                        document.getElementById("exercise_select").value = selectedExerciseId;
+                    }, 50);
                 }
             }
-        };
+        });
     </script>
 
     <div class="form-group">
-        <label>Series:</label>
-        <input type="number" name="series" value="{% if datos is mapping %}{{ datos.series }}{% else %}0{% endif %}">
+        <label>Número de Series:</label>
+        <input type="number" id="series_input" name="series" min="1" max="20"
+            value="{% if datos is mapping %}{{ datos.series }}{% else %}0{% endif %}" onchange="generateSeriesInputs()">
     </div>
 
-    <div class="form-group">
-        <label>Reps:</label>
-        <input type="number" name="reps" value="{% if datos is mapping %}{{ datos.reps }}{% else %}0{% endif %}">
+    <div id="series_container">
+        <!-- Series inputs will be generated here -->
     </div>
 
-    <div class="form-group">
-        <label>Peso (kg):</label>
-        <input type="number" step="0.1" name="peso"
-            value="{% if datos is mapping %}{{ datos.peso }}{% else %}0{% endif %}">
-    </div>
+    <script>
+        const seriesDetails = {% if datos is mapping and datos.series_details %}{{ datos.series_details | tojson }}{% else %}[]{% endif %};
+        console.log("Series Details:", seriesDetails);
 
-    <div class="form-group">
-        <label>Comentario:</label>
-        <textarea name="comentario">{% if datos is mapping %}{{ datos.comentario }}{% else %}-{% endif %}</textarea>
-    </div>
+        function generateSeriesInputs() {
+            const count = document.getElementById('series_input').value;
+            const container = document.getElementById('series_container');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= count; i++) {
+                const detail = seriesDetails.find(d => d.numero === i) || {};
+                const reps = detail.reps || 0;
+                const peso = detail.peso || 0;
+                const comentario = detail.comentario || '';
+
+                const div = document.createElement('div');
+                div.className = 'series-row';
+                div.style.border = '1px solid #444';
+                div.style.padding = '10px';
+                div.style.marginBottom = '10px';
+                div.style.borderRadius = '5px';
+                div.style.background = '#333';
+
+                div.innerHTML = `
+                    <h4 style="margin-top: 0; color: #aaa;">Serie ${i}</h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <div style="flex: 1;">
+                            <label>Reps:</label>
+                            <input type="number" name="reps_${i}" value="${reps}" required style="width: 100%;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label>Peso (kg):</label>
+                            <input type="number" step="0.1" name="peso_${i}" value="${peso}" required style="width: 100%;">
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <label>Comentario:</label>
+                        <input type="text" name="comentario_${i}" value="${comentario}" style="width: 100%;">
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // Generate on load if there are series
+        window.addEventListener('DOMContentLoaded', function () {
+            const seriesCount = document.getElementById('series_input').value;
+            if (seriesCount > 0) {
+                generateSeriesInputs();
+            }
+        });
+    </script>
     {% endif %}
 
     <button class="btn" type="submit">Guardar</button>

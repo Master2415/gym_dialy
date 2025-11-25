@@ -2,19 +2,19 @@
 {% block content %}
 <h2>Sesiones</h2>
 
-<a class="btn" href="/workouts/new">Nueva sesión</a>
-<div style="display: inline-block; margin-left: 10px;">
-    <a class="btn" href="/analytics" style="background-color: #2196F3;">Ver Progreso 📈</a>
+<div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+    <a class="btn btn-primary" href="/workouts/new">Nueva sesión</a>
+    <a class="btn btn-secondary" href="/exercises">Gestionar Ejercicios</a>
+    <a class="btn btn-secondary" href="/analytics">Ver Progreso 📈</a>
+    <a class="btn btn-secondary" href="/measurements">Mediciones 📏</a>
 
-    <div class="dropdown" style="display: inline-block;">
-        <button class="btn" style="background-color: #4CAF50;">Exportar 📊 ▼</button>
+    <div class="dropdown">
+        <button class="btn btn-secondary">Exportar 📊 ▼</button>
         <div class="dropdown-content">
             <a href="/export/csv">CSV</a>
             <a href="/export/json">JSON (Backup)</a>
         </div>
     </div>
-
-    <a class="btn" href="/measurements" style="background-color: #9C27B0;">Mediciones Corporales 📏</a>
 </div>
 
 <style>
@@ -47,6 +47,16 @@
 
     .dropdown:hover .dropdown-content {
         display: block;
+    }
+
+    .exercise-link {
+        color: #4CAF50;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .exercise-link:hover {
+        text-decoration: underline;
     }
 </style>
 <br><br>
@@ -116,38 +126,38 @@
 
 <div class="dashboard-stats">
     <div class="stat-card">
-        <h4 class="stat-title">Días Entrenados (Mes)</h4>
-        <span class="stat-value" style="color: var(--primary-color);">{{ dashboard.days_trained }}</span>
+        <h3>{{ dashboard.days_trained }}</h3>
+        <p>Días Entrenados (Mes)</p>
     </div>
     <div class="stat-card">
-        <h4 class="stat-title">Mejor 1RM Estimado</h4>
-        <span class="stat-value" style="color: #2196F3;">{{ dashboard.best_1rm }} kg</span>
+        <h3>{{ dashboard.best_weight }} kg</h3>
+        <p>Mejor Peso (Récord)</p>
     </div>
 </div>
 
-<div class="filter-container">
-    <form method="GET" class="filter-form">
-        <input type="text" name="search" placeholder="Buscar ejercicio..." value="{{ filters.search }}"
-            class="filter-input">
+<!-- Filtros -->
+<div class="filters">
+    <form method="GET" action="/workouts" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <input type="text" name="search" placeholder="Buscar ejercicio..." value="{{ filters.search }}">
 
-        <input type="date" name="date" value="{{ filters.date }}" class="filter-input">
-
-        <select name="group" class="filter-input">
+        <select name="group">
             <option value="">Todos los Grupos</option>
-            {% for g in muscle_groups %}
-            <option value="{{ g }}" {% if filters.group==g %}selected{% endif %}>{{ g }}</option>
+            {% for group in muscle_groups %}
+            <option value="{{ group }}" {% if filters.group==group %}selected{% endif %}>{{ group }}</option>
             {% endfor %}
         </select>
 
-        <select name="sort" class="filter-input">
-            <option value="date_desc" {% if filters.sort=='date_desc' %}selected{% endif %}>Fecha (Reciente)</option>
-            <option value="date_asc" {% if filters.sort=='date_asc' %}selected{% endif %}>Fecha (Antigua)</option>
+        <input type="date" name="date" value="{{ filters.date }}">
+
+        <select name="sort">
+            <option value="date_desc" {% if filters.sort=='date_desc' %}selected{% endif %}>Más recientes</option>
+            <option value="date_asc" {% if filters.sort=='date_asc' %}selected{% endif %}>Más antiguos</option>
             <option value="weight_desc" {% if filters.sort=='weight_desc' %}selected{% endif %}>Mayor Peso</option>
             <option value="reps_desc" {% if filters.sort=='reps_desc' %}selected{% endif %}>Más Reps</option>
         </select>
 
-        <button type="submit" class="btn-small" style="background-color: #2196F3;">Filtrar 🔍</button>
-        <a href="/workouts" class="btn-small" style="background-color: #777; text-decoration: none;">Limpiar</a>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="/workouts" class="btn btn-secondary">Limpiar</a>
     </form>
 </div>
 
@@ -155,13 +165,12 @@
     <table class="table-custom">
         <thead>
             <tr>
-                <th>Fecha Sesión</th>
-                <th>Notas</th>
-                <th>Grupo Muscular</th>
+                <th>Fecha</th>
+                <th>Grupo</th>
                 <th>Ejercicio</th>
                 <th>Series</th>
-                <th>Reps</th>
-                <th>Peso</th>
+                <th>Reps Prom.</th>
+                <th>Peso Prom.</th>
                 <th>Comentario</th>
                 <th>Acciones</th>
             </tr>
@@ -169,24 +178,16 @@
         <tbody>
             {% for w in workouts %}
             <tr>
-                <td>{{ w[0] }}</td>
-                <td>{{ w[8] }}</td>
-                <td>{{ w[1] if w[1] is not none else '-' }}</td>
-                <td>
-                    {% if w[9] %}
-                    <a href="/history/{{ w[9] }}" style="color: #4CAF50; text-decoration: none; font-weight: bold;">{{
-                        w[2] }}</a>
-                    {% else %}
-                    {{ w[2] if w[2] is not none else '-' }}
-                    {% endif %}
-                </td>
-                <td>{{ w[3] if w[3] is not none else '-' }}</td>
-                <td>{{ w[4] if w[4] is not none else '-' }}</td>
-                <td>{{ w[5] if w[5] is not none else '-' }}</td>
-                <td>{{ w[6] if w[6] is not none else '-' }}</td>
+                <td>{{ w[0].strftime('%Y-%m-%d') }}</td>
+                <td>{{ w[1] }}</td>
+                <td><a href="/history/{{ w[9] }}" class="exercise-link">{{ w[2] }}</a></td>
+                <td>{{ w[3] }}</td>
+                <td>{{ w[4] | round(1) }}</td>
+                <td>{{ w[5] | round(1) }} kg</td>
+                <td>{{ w[6] }}</td>
                 <td style="white-space: nowrap;">
-                    <a class="btn" href="/workouts/edit/{{ w[7] }}" title="Editar">✏️</a>
-                    <a class="btn btn-danger" href="/workouts/delete/{{ w[7] }}" title="Eliminar"
+                    <a href="/workouts/edit/{{ w[7] }}" class="btn btn-sm btn-secondary" title="Editar">✏️</a>
+                    <a href="/workouts/delete/{{ w[7] }}" class="btn btn-sm btn-danger" title="Eliminar"
                         onclick="return confirm('¿Estás seguro?')">🗑️</a>
                 </td>
             </tr>

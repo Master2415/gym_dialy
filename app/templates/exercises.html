@@ -1,11 +1,130 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Ejercicios</h2>
+<h2>Gestión de Ejercicios 🏋️</h2>
 
-<ul>
-{% for e in ejercicios %}
-<li><b>{{ e[2] }}</b> — {{ e[1] }}</li>
-{% endfor %}
-</ul>
+<div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+    <a href="/exercises/new" class="btn btn-primary">+ Nuevo Ejercicio</a>
+    <a href="/workouts" class="btn btn-secondary">Volver a Sesiones</a>
+    <button onclick="toggleAllGroups(true)" class="btn btn-secondary">Expandir Todos</button>
+    <button onclick="toggleAllGroups(false)" class="btn btn-secondary">Colapsar Todos</button>
+</div>
 
+{% if exercises_by_group %}
+<div class="accordion-container">
+    {% for group, exercises in exercises_by_group.items() %}
+    <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span style="font-weight: bold; font-size: 1.1rem;">{{ group }}</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th style="width: 200px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in exercises %}
+                    <tr>
+                        <td>{{ e[2] }}</td>
+                        <td>
+                            <a href="/exercises/edit/{{ e[0] }}" class="btn btn-sm btn-secondary">Editar</a>
+                            <a href="/exercises/delete/{{ e[0] }}" class="btn btn-sm btn-danger"
+                                onclick="return confirm('¿Eliminar este ejercicio? Si tiene entrenamientos, no se podrá eliminar.')">Eliminar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    .accordion-container {
+        margin-top: 20px;
+    }
+
+    .accordion-item {
+        margin-bottom: 10px;
+        border: 1px solid var(--border-color, #444);
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--card-bg, #2a2a2a);
+    }
+
+    .accordion-header {
+        padding: 15px 20px;
+        background: var(--card-bg, #333);
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s ease;
+        user-select: none;
+    }
+
+    .accordion-header:hover {
+        background: var(--hover-bg, #3a3a3a);
+    }
+
+    .accordion-icon {
+        transition: transform 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .accordion-item.active .accordion-icon {
+        transform: rotate(-180deg);
+    }
+
+    .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    .accordion-item.active .accordion-content {
+        max-height: 2000px;
+    }
+
+    .accordion-content table {
+        margin: 0;
+    }
+
+    .accordion-content tbody tr:last-child td {
+        border-bottom: none;
+    }
+</style>
+
+<script>
+    function toggleAccordion(header) {
+        const item = header.parentElement;
+        item.classList.toggle('active');
+    }
+
+    function toggleAllGroups(expand) {
+        const items = document.querySelectorAll('.accordion-item');
+        items.forEach(item => {
+            if (expand) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    // Expand first group by default
+    document.addEventListener('DOMContentLoaded', function () {
+        const firstItem = document.querySelector('.accordion-item');
+        if (firstItem) {
+            firstItem.classList.add('active');
+        }
+    });
+</script>
+{% else %}
+<p>No hay ejercicios registrados.</p>
+{% endif %}
 {% endblock %}
