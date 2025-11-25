@@ -35,7 +35,12 @@
     <!-- Gráfico de Progreso (Peso) -->
     <div
         style="flex: 1; min-width: 300px; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
-        <h3>Progreso de Peso (Top 5 Ejercicios) 📈</h3>
+        <h3>Progreso de Peso 📈</h3>
+        <div class="form-group">
+            <select id="exerciseSelect" onchange="updateProgressChart()">
+                <option value="">-- Selecciona un ejercicio --</option>
+            </select>
+        </div>
         <canvas id="progressChart"></canvas>
     </div>
 
@@ -44,6 +49,11 @@
         style="flex: 1; min-width: 300px; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
         <h3>Volumen por Grupo Muscular (30 días) 📊</h3>
         <canvas id="volumeChart"></canvas>
+        <p style="margin-top: 15px; font-size: 0.9em; color: var(--secondary-color);">
+            <strong>¿Qué es esto?</strong> Este gráfico muestra el "Volumen de Entrenamiento" total (Series ×
+            Repeticiones × Peso) movido por cada grupo muscular en los últimos 30 días. Te ayuda a ver qué músculos
+            estás trabajando más.
+        </p>
     </div>
 </div>
 
@@ -68,6 +78,7 @@
             responsive: true,
             plugins: {
                 legend: {
+                    position: 'bottom',
                     labels: { color: textColor }
                 },
                 title: {
@@ -94,26 +105,50 @@
     // --- GRÁFICO DE PROGRESO ---
     const chartData = {{ chart_data | tojson }};
     const ctx = document.getElementById('progressChart').getContext('2d');
-    const datasets = [];
-    const colors = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF'];
-    let i = 0;
+    const exerciseSelect = document.getElementById('exerciseSelect');
 
-    for (const [label, data] of Object.entries(chartData)) {
-        datasets.push({
-            label: label,
+    // Populate dropdown
+    const exercises = Object.keys(chartData).sort();
+    exercises.forEach(ex => {
+        const option = document.createElement('option');
+        option.value = ex;
+        option.textContent = ex;
+        exerciseSelect.appendChild(option);
+    });
+
+    let progressChart;
+
+    function updateProgressChart() {
+        const selectedExercise = exerciseSelect.value;
+        const data = chartData[selectedExercise] || [];
+
+        const dataset = {
+            label: selectedExercise || 'Selecciona un ejercicio',
             data: data,
-            borderColor: colors[i % colors.length],
-            fill: false,
-            tension: 0.1
+            borderColor: '#36A2EB',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)', // Area color
+            fill: true,
+            tension: 0.3
+        };
+
+        if (progressChart) {
+            progressChart.destroy();
+        }
+
+        progressChart = new Chart(ctx, {
+            type: 'line',
+            data: { datasets: [dataset] },
+            options: getChartOptions()
         });
-        i++;
     }
 
-    const progressChart = new Chart(ctx, {
-        type: 'line',
-        data: { datasets: datasets },
-        options: getChartOptions()
-    });
+    // Initialize with first exercise if available
+    if (exercises.length > 0) {
+        exerciseSelect.value = exercises[0];
+        updateProgressChart();
+    } else {
+        updateProgressChart(); // Empty chart
+    }
 
     // --- GRÁFICO DE VOLUMEN ---
     const volumeData = {{ volume_data | tojson }};

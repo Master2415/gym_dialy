@@ -30,22 +30,20 @@ def analytics():
     """, (session['user_id'],))
     prs = [{'nombre': row[0], 'max_peso': row[1], 'one_rm': round(row[2], 1), 'fecha': row[3]} for row in cur.fetchall()]
     
-    # 2. Datos para el gráfico (Evolución de peso de los 5 ejercicios más frecuentes)
+    # 2. Datos para el gráfico (Evolución de peso de TODOS los ejercicios)
+    # Fetch all exercises that have workout data
     cur.execute("""
-        SELECT exercise_id 
+        SELECT DISTINCT exercise_id 
         FROM workout_details wd
         JOIN workouts w ON wd.workout_id = w.id
         WHERE w.user_id = %s
-        GROUP BY exercise_id
-        ORDER BY COUNT(*) DESC
-        LIMIT 5
     """, (session['user_id'],))
-    top_exercises = [row[0] for row in cur.fetchall()]
+    all_exercises = [row[0] for row in cur.fetchall()]
     
     chart_data = {}
     
-    if top_exercises:
-        format_strings = ','.join(['%s'] * len(top_exercises))
+    if all_exercises:
+        format_strings = ','.join(['%s'] * len(all_exercises))
         # Get max weight per workout for these exercises
         query = f"""
             SELECT e.nombre, w.fecha, MAX(ws.peso)
@@ -57,7 +55,7 @@ def analytics():
             GROUP BY w.id, e.nombre, w.fecha
             ORDER BY w.fecha ASC
         """
-        params = [session['user_id']] + top_exercises
+        params = [session['user_id']] + all_exercises
         cur.execute(query, tuple(params))
         
         rows = cur.fetchall()

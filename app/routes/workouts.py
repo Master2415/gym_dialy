@@ -40,6 +40,12 @@ def workouts():
     date_filter = request.args.get('date', '')
     sort_by = request.args.get('sort', 'date_desc')
     
+    today = datetime.date.today()
+    
+    # Default to today if no date filter is provided
+    if not date_filter and not search and not group_filter:
+        date_filter = today.strftime('%Y-%m-%d')
+    
     query = """
         SELECT 
             w.fecha, 
@@ -82,7 +88,7 @@ def workouts():
         # MySQL allows sorting by alias in HAVING or ORDER BY usually.
         query += " ORDER BY avg_peso DESC"
     elif sort_by == 'reps_desc':
-        query += " ORDER BY wd.reps DESC"
+        query += " ORDER BY avg_reps DESC"
     else:
         query += " ORDER BY w.fecha DESC, w.id DESC"
 
@@ -97,11 +103,33 @@ def workouts():
     cur.execute("SELECT DISTINCT grupo_muscular FROM exercises WHERE user_id = %s ORDER BY grupo_muscular", (session['user_id'],))
     muscle_groups = [row[0] for row in cur.fetchall()]
 
+    # Calcular Previous y Next Day
+    prev_date = None
+    next_date = None
+    
+    if date_filter:
+        current_date_obj = datetime.datetime.strptime(date_filter, '%Y-%m-%d').date()
+        
+        # Buscar fecha anterior con entrenamientos
+        cur.execute("SELECT MAX(DATE(fecha)) FROM workouts WHERE user_id = %s AND DATE(fecha) < %s", (session['user_id'], date_filter))
+        prev_row = cur.fetchone()
+        if prev_row and prev_row[0]:
+            prev_date = prev_row[0].strftime('%Y-%m-%d')
+            
+        # Buscar fecha posterior con entrenamientos
+        cur.execute("SELECT MIN(DATE(fecha)) FROM workouts WHERE user_id = %s AND DATE(fecha) > %s", (session['user_id'], date_filter))
+        next_row = cur.fetchone()
+        if next_row and next_row[0]:
+            next_date = next_row[0].strftime('%Y-%m-%d')
+
     conn.close()
     
     dashboard_stats = {
         'days_trained': days_trained,
-        'best_weight': best_weight
+        'best_weight': best_weight,
+        'prev_date': prev_date,
+        'next_date': next_date,
+        'current_date': date_filter
     }
     
     return render_template("workouts.html", 

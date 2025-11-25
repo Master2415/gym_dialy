@@ -3,7 +3,6 @@
 <h2>Gestión de Ejercicios 🏋️</h2>
 
 <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-    <a href="/exercises/new" class="btn btn-primary">+ Nuevo Ejercicio</a>
     <a href="/workouts" class="btn btn-secondary">Volver a Sesiones</a>
     <button onclick="toggleAllGroups(true)" class="btn btn-secondary">Expandir Todos</button>
     <button onclick="toggleAllGroups(false)" class="btn btn-secondary">Colapsar Todos</button>
@@ -14,7 +13,11 @@
     {% for group, exercises in exercises_by_group.items() %}
     <div class="accordion-item">
         <div class="accordion-header" onclick="toggleAccordion(this)">
-            <span style="font-weight: bold; font-size: 1.1rem;">{{ group }}</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-weight: bold; font-size: 1.1rem;">{{ group }}</span>
+                <a href="/exercises/new?group={{ group }}" class="btn btn-sm btn-primary"
+                    onclick="event.stopPropagation()">+ Añadir</a>
+            </div>
             <span class="accordion-icon">▼</span>
         </div>
         <div class="accordion-content">

@@ -41,7 +41,8 @@ def new_exercise():
         flash("Ejercicio creado correctamente.")
         return redirect(url_for('exercises.index'))
         
-    return render_template("exercise_form.html", title="Nuevo Ejercicio", exercise=None)
+    group_param = request.args.get('group')
+    return render_template("exercise_form.html", title="Nuevo Ejercicio", exercise=None, selected_group=group_param)
 
 @exercises_bp.route("/exercises/edit/<int:id>", methods=["GET", "POST"])
 @login_required

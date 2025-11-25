@@ -187,12 +187,39 @@
                 <td>{{ w[6] }}</td>
                 <td style="white-space: nowrap;">
                     <a href="/workouts/edit/{{ w[7] }}" class="btn btn-sm btn-secondary" title="Editar">✏️</a>
-                    <a href="/workouts/delete/{{ w[7] }}" class="btn btn-sm btn-danger" title="Eliminar"
-                        onclick="return confirm('¿Estás seguro?')">🗑️</a>
+                    <a href="#" class="btn btn-sm btn-danger" title="Eliminar"
+                        onclick="confirmDelete('{{ w[7] }}')">🗑️</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<!-- Navigation Buttons -->
+<div style="display: flex; justify-content: space-between; margin-top: 20px;">
+    {% if dashboard.prev_date %}
+    <a href="{{ url_for('workouts.workouts', date=dashboard.prev_date) }}" class="btn btn-secondary">
+        &larr; Día Anterior ({{ dashboard.prev_date }})
+    </a>
+    {% else %}
+    <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;">&larr; Día Anterior</button>
+    {% endif %}
+
+    {% if dashboard.next_date %}
+    <a href="{{ url_for('workouts.workouts', date=dashboard.next_date) }}" class="btn btn-secondary">
+        Día Posterior ({{ dashboard.next_date }}) &rarr;
+    </a>
+    {% else %}
+    <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;">Día Posterior &rarr;</button>
+    {% endif %}
+</div>
+
+<script>
+    function confirmDelete(id) {
+        if (confirm('¿Estás seguro de eliminar esta sesión?')) {
+            window.location.href = `/workouts/delete/${id}`;
+        }
+    }
+</script>
 {% endblock %}

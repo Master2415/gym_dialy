@@ -77,11 +77,14 @@
 
         // Inicializar si hay un ejercicio seleccionado
         window.addEventListener('DOMContentLoaded', function () {
-            // Set default date to today if empty
+            // Set default date to today if empty (Local Time)
             const fechaInput = document.getElementById('fecha_input');
             if (!fechaInput.value) {
-                const today = new Date().toISOString().split('T')[0];
-                fechaInput.value = today;
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                fechaInput.value = `${year}-${month}-${day}`;
             }
 
             if (selectedExerciseId) {
@@ -109,8 +112,13 @@
 
     <div class="form-group">
         <label>Número de Series:</label>
-        <input type="number" id="series_input" name="series" min="1" max="20"
-            value="{% if datos is mapping %}{{ datos.series }}{% else %}0{% endif %}" onchange="generateSeriesInputs()">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="changeSeries(-1)" style="padding: 5px 15px;">-</button>
+            <input type="number" id="series_input" name="series" min="1" max="20"
+                value="{% if datos is mapping %}{{ datos.series }}{% else %}0{% endif %}" 
+                style="width: 60px; text-align: center;" readonly>
+            <button type="button" class="btn btn-secondary" onclick="changeSeries(1)" style="padding: 5px 15px;">+</button>
+        </div>
     </div>
 
     <div id="series_container">
@@ -120,6 +128,16 @@
     <script>
         const seriesDetails = {% if datos is mapping and datos.series_details %}{{ datos.series_details | tojson }}{% else %}[]{% endif %};
         console.log("Series Details:", seriesDetails);
+
+        function changeSeries(delta) {
+            const input = document.getElementById('series_input');
+            let val = parseInt(input.value) || 0;
+            val += delta;
+            if (val < 1) val = 1;
+            if (val > 20) val = 20;
+            input.value = val;
+            generateSeriesInputs();
+        }
 
         function generateSeriesInputs() {
             const count = document.getElementById('series_input').value;
@@ -138,7 +156,8 @@
                 div.style.padding = '10px';
                 div.style.marginBottom = '10px';
                 div.style.borderRadius = '5px';
-                div.style.background = '#333';
+                div.style.background = 'var(--card-bg, #333)';
+                div.style.color = 'var(--text-color, #fff)';
 
                 div.innerHTML = `
                     <h4 style="margin-top: 0; color: #aaa;">Serie ${i}</h4>

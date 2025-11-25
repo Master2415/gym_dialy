@@ -12,9 +12,11 @@
         <label>Grupo Muscular:</label>
         <select name="grupo_muscular" required>
             <option value="">-- Seleccionar --</option>
-            {% set groups = ['Pecho', 'Espalda', 'Piernas', 'Hombros', 'Brazos', 'Abdominales', 'Cardio', 'Otro'] %}
+            {% set groups = ['Pecho', 'Espalda', 'Piernas', 'Hombros', 'Bíceps', 'Tríceps', 'Antebrazos', 'Abdominales',
+            'Glúteos', 'Cardio', 'Otro'] %}
             {% for g in groups %}
-            <option value="{{ g }}" {% if exercise and exercise[2]==g %}selected{% endif %}>{{ g }}</option>
+            <option value="{{ g }}" {% if (exercise and exercise[2]==g) or (not exercise and selected_group==g)
+                %}selected{% endif %}>{{ g }}</option>
             {% endfor %}
         </select>
     </div>
