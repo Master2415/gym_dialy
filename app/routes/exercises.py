@@ -32,6 +32,12 @@ def new_exercise():
         nombre = request.form["nombre"]
         grupo = request.form["grupo_muscular"]
         
+        if grupo == "Otro":
+            grupo = request.form.get("new_group_name")
+            if not grupo:
+                flash("Debes especificar el nombre del nuevo grupo.")
+                return redirect(request.url)
+        
         conn = get_connection()
         cur = conn.cursor()
         cur.execute("INSERT INTO exercises (user_id, nombre, grupo_muscular) VALUES (%s, %s, %s)", 
@@ -61,6 +67,12 @@ def edit_exercise(id):
     if request.method == "POST":
         nombre = request.form["nombre"]
         grupo = request.form["grupo_muscular"]
+        
+        if grupo == "Otro":
+            grupo = request.form.get("new_group_name")
+            if not grupo:
+                flash("Debes especificar el nombre del nuevo grupo.")
+                return redirect(request.url)
         
         cur.execute("UPDATE exercises SET nombre = %s, grupo_muscular = %s WHERE id = %s", (nombre, grupo, id))
         conn.commit()

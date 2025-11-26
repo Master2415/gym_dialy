@@ -47,13 +47,31 @@
     <!-- Gráfico de Volumen (Últimos 30 días) -->
     <div
         style="flex: 1; min-width: 300px; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
-        <h3>Volumen por Grupo Muscular (30 días) 📊</h3>
+        <h3>Volumen por Grupo Muscular 📊</h3>
+        <div style="margin-bottom: 15px;">
+            <select id="timeRangeSelect" onchange="updateVolumeFilter(this.value)" style="padding: 5px; border-radius: 4px; background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color);">
+                <option value="today">Hoy</option>
+                <option value="30_days">Últimos 30 días</option>
+                <option value="all">Todo el tiempo</option>
+            </select>
+        </div>
         <canvas id="volumeChart"></canvas>
         <p style="margin-top: 15px; font-size: 0.9em; color: var(--secondary-color);">
             <strong>¿Qué es esto?</strong> Este gráfico muestra el "Volumen de Entrenamiento" total (Series ×
-            Repeticiones × Peso) movido por cada grupo muscular en los últimos 30 días. Te ayuda a ver qué músculos
+            Repeticiones × Peso) movido por cada grupo muscular en el periodo seleccionado. Te ayuda a ver qué músculos
             estás trabajando más.
         </p>
+        <script>
+            function updateVolumeFilter(val) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('time_range', val);
+                window.location.href = url.toString();
+            }
+            // Set initial value
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('timeRangeSelect').value = "{{ time_range }}";
+            });
+        </script>
     </div>
 </div>
 

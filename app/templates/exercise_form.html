@@ -10,15 +10,43 @@
 
     <div class="form-group">
         <label>Grupo Muscular:</label>
-        <select name="grupo_muscular" required>
+        {% if selected_group %}
+        <input type="text" value="{{ selected_group }}" disabled
+            style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); width: 100%; padding: 8px; border-radius: 4px;">
+        <input type="hidden" name="grupo_muscular" value="{{ selected_group }}">
+        {% else %}
+        <select name="grupo_muscular" id="groupSelect" onchange="checkNewGroup(this)" required>
             <option value="">-- Seleccionar --</option>
             {% set groups = ['Pecho', 'Espalda', 'Piernas', 'Hombros', 'Bíceps', 'Tríceps', 'Antebrazos', 'Abdominales',
-            'Glúteos', 'Cardio', 'Otro'] %}
+            'Glúteos', 'Cardio'] %}
             {% for g in groups %}
-            <option value="{{ g }}" {% if (exercise and exercise[2]==g) or (not exercise and selected_group==g)
-                %}selected{% endif %}>{{ g }}</option>
+            <option value="{{ g }}" {% if exercise and exercise[2]==g %}selected{% endif %}>{{ g }}</option>
             {% endfor %}
+            <option value="Otro" {% if exercise and exercise[2] not in groups %}selected{% endif %}>Otro / Nuevo
+            </option>
         </select>
+
+        <div id="newGroupInput" style="display: none; margin-top: 10px;">
+            <input type="text" name="new_group_name" placeholder="Nombre del nuevo grupo" {% if exercise and exercise[2]
+                not in groups %}value="{{ exercise[2] }}" {% endif %}>
+        </div>
+
+        <script>
+            function checkNewGroup(select) {
+                const inputDiv = document.getElementById('newGroupInput');
+                if (select.value === 'Otro') {
+                    inputDiv.style.display = 'block';
+                } else {
+                    inputDiv.style.display = 'none';
+                }
+            }
+            // Check on load
+            document.addEventListener('DOMContentLoaded', function () {
+                const select = document.getElementById('groupSelect');
+                if (select) checkNewGroup(select);
+            });
+        </script>
+        {% endif %}
     </div>
 
     <button class="btn" type="submit">Guardar</button>

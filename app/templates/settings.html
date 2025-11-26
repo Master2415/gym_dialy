@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Configuración ⚙️</h2>
+
+<div style="display: flex; flex-direction: column; gap: 20px; max-width: 800px;">
+    {% for category in options %}
+    <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
+        <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">{{
+            category.category }}</h3>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for item in category.menu_items %}
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+                <div>
+                    <div style="font-weight: bold;">{{ item.name }}</div>
+                    <div style="font-size: 0.9em; color: var(--secondary-color);">{{ item.desc }}</div>
+                </div>
+                {% if item.action %}
+                <button onclick="{{ item.action }}" class="btn btn-sm btn-secondary">Configurar</button>
+                {% else %}
+                <a href="{{ item.link }}" class="btn btn-sm btn-secondary">Ir &rarr;</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <div style="margin-top: 20px;">
+        <a href="/logout" class="btn btn-danger">Cerrar Sesión</a>
+        <a href="/workouts" class="btn btn-secondary" style="margin-left: 10px;">Volver</a>
+    </div>
+</div>
+
+<script>
+    function toggleTheme() {
+        alert('Esta funcionalidad se implementará pronto. Por ahora, el tema se detecta automáticamente del sistema.');
+    }
+</script>
+{% endblock %}

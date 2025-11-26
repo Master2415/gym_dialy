@@ -17,12 +17,14 @@ def create_app():
     from .routes.analytics import analytics_bp
     from .routes.export import export_bp
     from .routes.exercises import exercises_bp
+    from .routes.settings import settings_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(workouts_bp)
     app.register_blueprint(analytics_bp)
     app.register_blueprint(export_bp)
     app.register_blueprint(exercises_bp)
+    app.register_blueprint(settings_bp)
 
     # Initialize DB
     init_db()

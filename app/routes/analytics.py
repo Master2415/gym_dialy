@@ -69,22 +69,39 @@ def analytics():
             
             chart_data[name].append({'x': date, 'y': weight})
             
-    # 3. Volumen por Grupo Muscular (Últimos 30 días)
-    thirty_days_ago = datetime.date.today() - datetime.timedelta(days=30)
-    cur.execute("""
+    # 3. Volumen por Grupo Muscular
+    time_range = request.args.get('time_range', '30_days')
+    
+    query = """
         SELECT e.grupo_muscular, SUM(ws.reps * ws.peso) as volumen
         FROM workout_series ws
         JOIN workout_details wd ON ws.workout_detail_id = wd.id
         JOIN workouts w ON wd.workout_id = w.id
         JOIN exercises e ON wd.exercise_id = e.id
-        WHERE w.user_id = %s AND w.fecha >= %s
-        GROUP BY e.grupo_muscular
-    """, (session['user_id'], thirty_days_ago))
+        WHERE w.user_id = %s
+    """
+    params = [session['user_id']]
+    
+    if time_range == 'today':
+        query += " AND DATE(w.fecha) = CURDATE()"
+    elif time_range == '30_days':
+        thirty_days_ago = datetime.date.today() - datetime.timedelta(days=30)
+        query += " AND w.fecha >= %s"
+        params.append(thirty_days_ago)
+    # elif time_range == 'all': pass (no filter)
+    
+    query += " GROUP BY e.grupo_muscular"
+    
+    cur.execute(query, tuple(params))
     volume_data = {row[0]: float(row[1]) for row in cur.fetchall() if row[1] is not None}
             
     conn.close()
     
-    return render_template("analytics.html", personal_records=prs, chart_data=chart_data, volume_data=volume_data)
+    return render_template("analytics.html", 
+                           personal_records=prs, 
+                           chart_data=chart_data, 
+                           volume_data=volume_data,
+                           time_range=time_range)
 
 @analytics_bp.route("/measurements", methods=["GET", "POST"])
 @login_required
