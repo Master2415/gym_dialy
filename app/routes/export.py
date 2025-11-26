@@ -12,23 +12,25 @@ def export_csv():
     conn = get_connection()
     cur = conn.cursor()
     
+    # Query to get all series data with exercise and workout info
     cur.execute("""
         SELECT 
             w.fecha, 
             e.grupo_muscular, 
-            e.nombre, 
-            wd.series, 
-            wd.reps, 
-            wd.peso, 
-            wd.comentario, 
+            e.nombre,
+            ws.serie_numero,
+            ws.reps, 
+            ws.peso, 
+            ws.comentario as serie_comentario,
             w.notas,
-            (wd.peso * (1 + wd.reps/30)) as estimated_1rm,
-            (wd.series * wd.reps * wd.peso) as volumen
-        FROM workouts w
-        LEFT JOIN workout_details wd ON w.id = wd.workout_id
-        LEFT JOIN exercises e ON wd.exercise_id = e.id
+            (ws.peso * (1 + ws.reps/30)) as estimated_1rm,
+            (ws.reps * ws.peso) as volumen_serie
+        FROM workout_series ws
+        JOIN workout_details wd ON ws.workout_detail_id = wd.id
+        JOIN workouts w ON wd.workout_id = w.id
+        JOIN exercises e ON wd.exercise_id = e.id
         WHERE w.user_id = %s
-        ORDER BY w.fecha DESC
+        ORDER BY w.fecha DESC, e.nombre, ws.serie_numero
     """, (session['user_id'],))
     
     data = cur.fetchall()
@@ -36,7 +38,7 @@ def export_csv():
     
     si = io.StringIO()
     cw = csv.writer(si)
-    cw.writerow(['Fecha', 'Grupo Muscular', 'Ejercicio', 'Series', 'Reps', 'Peso', 'Comentario', 'Notas Sesion', '1RM Estimado', 'Volumen'])
+    cw.writerow(['Fecha', 'Grupo Muscular', 'Ejercicio', 'Serie #', 'Reps', 'Peso (kg)', 'Comentario Serie', 'Notas Sesion', '1RM Estimado', 'Volumen Serie'])
     cw.writerows(data)
     
     output = make_response(si.getvalue())
@@ -50,46 +52,69 @@ def export_json():
     conn = get_connection()
     cur = conn.cursor()
     
+    # Get all workouts for the user
     cur.execute("""
-        SELECT 
-            w.id, w.fecha, w.notas,
-            e.nombre, e.grupo_muscular,
-            wd.series, wd.reps, wd.peso, wd.comentario,
-            (wd.peso * (1 + wd.reps/30)) as estimated_1rm,
-            (wd.series * wd.reps * wd.peso) as volumen
-        FROM workouts w
-        LEFT JOIN workout_details wd ON w.id = wd.workout_id
-        LEFT JOIN exercises e ON wd.exercise_id = e.id
-        WHERE w.user_id = %s
-        ORDER BY w.fecha DESC
+        SELECT id, fecha, notas
+        FROM workouts 
+        WHERE user_id = %s
+        ORDER BY fecha DESC
     """, (session['user_id'],))
     
-    rows = cur.fetchall()
+    workouts = cur.fetchall()
+    workouts_list = []
+    
+    for workout in workouts:
+        workout_id = workout[0]
+        workout_data = {
+            'id': workout_id,
+            'fecha': workout[1].strftime('%Y-%m-%d'),
+            'notas': workout[2],
+            'ejercicios': []
+        }
+        
+        # Get exercises for this workout
+        cur.execute("""
+            SELECT DISTINCT wd.id, e.nombre, e.grupo_muscular
+            FROM workout_details wd
+            JOIN exercises e ON wd.exercise_id = e.id
+            WHERE wd.workout_id = %s
+        """, (workout_id,))
+        
+        details = cur.fetchall()
+        
+        for detail in details:
+            detail_id = detail[0]
+            exercise_data = {
+                'nombre': detail[1],
+                'grupo': detail[2],
+                'series': []
+            }
+            
+            # Get all series for this exercise
+            cur.execute("""
+                SELECT serie_numero, reps, peso, comentario
+                FROM workout_series
+                WHERE workout_detail_id = %s
+                ORDER BY serie_numero
+            """, (detail_id,))
+            
+            series = cur.fetchall()
+            
+            for serie in series:
+                serie_data = {
+                    'numero': serie[0],
+                    'reps': serie[1],
+                    'peso': float(serie[2]) if serie[2] else 0,
+                    'comentario': serie[3],
+                    '1rm_estimado': round(serie[2] * (1 + serie[1]/30), 2) if serie[2] and serie[1] else 0,
+                    'volumen': round(serie[1] * serie[2], 2) if serie[1] and serie[2] else 0
+                }
+                exercise_data['series'].append(serie_data)
+            
+            workout_data['ejercicios'].append(exercise_data)
+        
+        workouts_list.append(workout_data)
+    
     conn.close()
     
-    workouts_dict = {}
-    for row in rows:
-        wid = row[0]
-        if wid not in workouts_dict:
-            workouts_dict[wid] = {
-                'id': wid,
-                'fecha': row[1].strftime('%Y-%m-%d'),
-                'notas': row[2],
-                'ejercicios': []
-            }
-        
-        if row[3]:
-            workouts_dict[wid]['ejercicios'].append({
-                'nombre': row[3],
-                'grupo': row[4],
-                'series': row[5],
-                'reps': row[6],
-                'peso': row[7],
-                'comentario': row[8],
-                '1rm_estimado': round(row[9], 2) if row[9] else 0,
-                'volumen': round(row[10], 2) if row[10] else 0
-            })
-            
-    final_data = {'workouts': list(workouts_dict.values())}
-    
-    return jsonify(final_data)
+    return jsonify({'workouts': workouts_list})

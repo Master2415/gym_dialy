@@ -47,7 +47,7 @@ def register():
             
             # Seed exercises for the new user
             try:
-                from seed_exercises import seed_exercises
+                from scripts.seed_exercises import seed_exercises
                 seed_exercises(new_user_id)
             except Exception as e:
                 print(f"Error seeding exercises for user {new_user_id}: {e}")
@@ -138,7 +138,7 @@ def google_callback():
                 
                 # Seed exercises for new user
                 try:
-                    from seed_exercises import seed_exercises
+                    from scripts.seed_exercises import seed_exercises
                     seed_exercises(new_user_id)
                 except Exception as e:
                     print(f"Error seeding exercises for user {new_user_id}: {e}")
