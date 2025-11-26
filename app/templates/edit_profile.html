@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Editar Perfil 👤</h2>
+
+<div class="form-container" style="max-width: 500px; margin: 0 auto;">
+    <form method="POST" action="/settings/profile">
+        <div class="form-group">
+            <label for="full_name">Nombre Completo:</label>
+            <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}" class="form-control"
+                placeholder="Tu nombre">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Correo Electrónico:</label>
+            <input type="email" id="email" name="email" value="{{ user.email }}" class="form-control"
+                placeholder="ejemplo@correo.com">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            <a href="/settings" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
