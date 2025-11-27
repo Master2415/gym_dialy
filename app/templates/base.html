@@ -8,39 +8,63 @@
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏋️</text></svg>">
     <script>
-        // Check for saved theme preference, otherwise use system preference
+        // ============================================
+        // SISTEMA DE TEMAS
+        // ============================================
+        // Este script maneja la selección y persistencia de temas de color
+
+        /**
+         * Obtiene el tema preferido del usuario
+         * Prioridad: 1) localStorage, 2) preferencia del sistema
+         * @returns {string} Nombre del tema ('light', 'dark', 'blue', 'green', 'purple', 'amber')
+         */
         const getPreferredTheme = () => {
             const storedTheme = localStorage.getItem('theme')
             if (storedTheme) {
                 return storedTheme
             }
+            // Si no hay tema guardado, usar la preferencia del sistema
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
         }
 
+        /**
+         * Aplica un tema al documento
+         * @param {string} theme - Nombre del tema a aplicar
+         */
         const setTheme = (theme) => {
+            // Aplicar el tema mediante el atributo data-theme en el elemento raíz
             document.documentElement.setAttribute('data-theme', theme)
+            // Guardar la preferencia en localStorage para persistencia
             localStorage.setItem('theme', theme)
-            updateIcon(theme)
         }
 
-        const updateIcon = (theme) => {
-            const icon = document.getElementById('theme-toggle-icon')
-            if (icon) {
-                icon.textContent = theme === 'dark' ? '☀️' : '🌙'
-            }
-        }
-
-        // Apply theme immediately
+        // Aplicar el tema inmediatamente al cargar la página (antes del DOM)
         setTheme(getPreferredTheme())
 
+        // ============================================
+        // MENÚ DESPLEGABLE DE NAVEGACIÓN
+        // ============================================
+        // Configurar el menú de tres puntos cuando el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {
-            const toggleBtn = document.getElementById('theme-toggle')
-            if (toggleBtn) {
-                updateIcon(document.documentElement.getAttribute('data-theme'))
-                toggleBtn.addEventListener('click', () => {
-                    const currentTheme = document.documentElement.getAttribute('data-theme')
-                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
-                    setTheme(newTheme)
+            const settingsToggle = document.getElementById('settings-toggle')
+            const dropdown = document.getElementById('settings-dropdown')
+
+            // Solo configurar si ambos elementos existen (usuario autenticado)
+            if (settingsToggle && dropdown) {
+                // Alternar visibilidad del menú al hacer clic en el botón
+                settingsToggle.addEventListener('click', (e) => {
+                    e.stopPropagation() // Evitar que el clic se propague al documento
+                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block'
+                })
+
+                // Cerrar el menú al hacer clic fuera de él
+                document.addEventListener('click', () => {
+                    dropdown.style.display = 'none'
+                })
+
+                // Evitar que clics dentro del menú lo cierren
+                dropdown.addEventListener('click', (e) => {
+                    e.stopPropagation()
                 })
             }
         })
@@ -49,20 +73,52 @@
 
 <body>
     <div class="container">
+        <!-- ============================================ -->
+        <!-- ENCABEZADO Y NAVEGACIÓN PRINCIPAL -->
+        <!-- ============================================ -->
         <div style="display: flex; justify-content: space-between; align-items: center;">
+            <!-- Título principal de la aplicación -->
             <h1>🏋️ Diario de Entrenamiento</h1>
+
+            <!-- Área de usuario y menú (solo visible si hay sesión activa) -->
             <div style="display: flex; align-items: center; gap: 15px;">
                 {% if session.get('user_id') %}
+                <!-- Saludo al usuario -->
                 <span style="text-transform: uppercase;">Hola, <strong>{{ session.get('username') }}</strong></span>
+
+                <!-- Botón de cerrar sesión -->
                 <a href="/logout" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.9rem;">Salir</a>
+
+                <!-- Menú desplegable de navegación (tres puntos) -->
+                <div class="settings-menu">
+                    <!-- Botón para abrir/cerrar el menú -->
+                    <button id="settings-toggle" class="btn btn-secondary"
+                        style="padding: 5px 10px; font-size: 1.2rem; margin: 0;">
+                        <span>⋮</span>
+                    </button>
+
+                    <!-- Contenido del menú desplegable -->
+                    <div class="settings-dropdown" id="settings-dropdown">
+                        <!-- Enlaces de navegación principales -->
+                        <a href="/exercises">Gestionar Ejercicios</a>
+                        <a href="/analytics">Ver Progreso</a>
+                        <a href="/measurements">Mediciones</a>
+
+                        <!-- Separador visual -->
+                        <div style="border-top: 1px solid var(--border-color); margin: 5px 0;"></div>
+
+                        <!-- Enlace a configuración -->
+                        <a href="/settings">Configuración</a>
+                    </div>
+                </div>
                 {% endif %}
-                <button id="theme-toggle" class="btn btn-secondary"
-                    style="padding: 5px 10px; font-size: 1.2rem; margin: 0;">
-                    <span id="theme-toggle-icon">🌙</span>
-                </button>
             </div>
         </div>
         <hr>
+
+        <!-- ============================================ -->
+        <!-- MENSAJES FLASH (notificaciones temporales) -->
+        <!-- ============================================ -->
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         <div class="alert-container">
@@ -72,7 +128,13 @@
         </div>
         {% endif %}
         {% endwith %}
+
+        <!-- ============================================ -->
+        <!-- CONTENIDO PRINCIPAL DE LA PÁGINA -->
+        <!-- ============================================ -->
+        <!-- Este bloque será reemplazado por el contenido específico de cada página -->
         {% block content %}{% endblock %}
+
 
         <footer class="page-footer">
             <a href="https://github.com/Master2415" target="_blank" rel="noopener noreferrer" class="github-link">

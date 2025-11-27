@@ -6,7 +6,7 @@
     <!-- Tabla de Récords Personales (PR) -->
     <div
         style="flex: 1; min-width: 300px; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
-        <h3>Récords Personales (PR) 🏆</h3>
+        <h3>Récords Personales (PR)</h3>
         <table class="table-custom">
             <thead>
                 <tr>
@@ -35,7 +35,7 @@
     <!-- Gráfico de Progreso (Peso) -->
     <div
         style="flex: 1; min-width: 300px; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
-        <h3>Progreso de Peso 📈</h3>
+        <h3>Progreso de Peso</h3>
         <div class="form-group">
             <select id="exerciseSelect" onchange="updateProgressChart()">
                 <option value="">-- Selecciona un ejercicio --</option>
@@ -47,9 +47,10 @@
     <!-- Gráfico de Volumen (Últimos 30 días) -->
     <div
         style="flex: 1; min-width: 300px; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
-        <h3>Volumen por Grupo Muscular 📊</h3>
+        <h3>Volumen por Grupo Muscular</h3>
         <div style="margin-bottom: 15px;">
-            <select id="timeRangeSelect" onchange="updateVolumeFilter(this.value)" style="padding: 5px; border-radius: 4px; background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color);">
+            <select id="timeRangeSelect" onchange="updateVolumeFilter(this.value)"
+                style="padding: 5px; border-radius: 4px; background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color);">
                 <option value="today">Hoy</option>
                 <option value="30_days">Últimos 30 días</option>
                 <option value="all">Todo el tiempo</option>
@@ -68,7 +69,7 @@
                 window.location.href = url.toString();
             }
             // Set initial value
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('timeRangeSelect').value = "{{ time_range }}";
             });
         </script>
@@ -138,15 +139,66 @@
 
     function updateProgressChart() {
         const selectedExercise = exerciseSelect.value;
-        const data = chartData[selectedExercise] || [];
+        const exerciseData = chartData[selectedExercise] || { weight: [], reps: [] };
 
-        const dataset = {
-            label: selectedExercise || 'Selecciona un ejercicio',
-            data: data,
-            borderColor: '#36A2EB',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)', // Area color
-            fill: true,
-            tension: 0.3
+        const datasets = [
+            {
+                label: 'Peso (kg)',
+                data: exerciseData.weight || [],
+                borderColor: '#36A2EB',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: true,
+                tension: 0.3,
+                yAxisID: 'y-weight'
+            },
+            {
+                label: 'Repeticiones',
+                data: exerciseData.reps || [],
+                borderColor: '#FF6384',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: true,
+                tension: 0.3,
+                yAxisID: 'y-reps'
+            }
+        ];
+
+        const textColor = getCssVar('--text-color');
+        const gridColor = getCssVar('--border-color');
+
+        const options = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: textColor }
+                },
+                title: {
+                    display: true,
+                    text: selectedExercise || 'Selecciona un ejercicio',
+                    color: textColor
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: textColor },
+                    grid: { color: gridColor },
+                    title: { display: true, text: 'Fecha', color: textColor }
+                },
+                'y-weight': {
+                    type: 'linear',
+                    position: 'left',
+                    ticks: { color: textColor },
+                    grid: { color: gridColor },
+                    title: { display: true, text: 'Peso (kg)', color: textColor }
+                },
+                'y-reps': {
+                    type: 'linear',
+                    position: 'right',
+                    ticks: { color: textColor },
+                    grid: { drawOnChartArea: false },
+                    title: { display: true, text: 'Repeticiones', color: textColor }
+                }
+            }
         };
 
         if (progressChart) {
@@ -155,8 +207,8 @@
 
         progressChart = new Chart(ctx, {
             type: 'line',
-            data: { datasets: [dataset] },
-            options: getChartOptions()
+            data: { datasets },
+            options
         });
     }
 

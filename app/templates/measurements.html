@@ -101,6 +101,38 @@
     <canvas id="measurementsChart"></canvas>
 </div>
 
+<br>
+<h3>Historial Detallado</h3>
+<div
+    style="background: var(--container-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--border-color);">
+                <th style="padding: 10px; text-align: left;">Fecha</th>
+                <th style="padding: 10px; text-align: center;">Peso (kg)</th>
+                <th style="padding: 10px; text-align: center;">Cintura (cm)</th>
+                <th style="padding: 10px; text-align: center;">Brazos (cm)</th>
+                <th style="padding: 10px; text-align: center;">Piernas (cm)</th>
+                <th style="padding: 10px; text-align: center;">Pecho (cm)</th>
+                <th style="padding: 10px; text-align: center;">% Grasa</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for measurement in measurements | reverse %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 10px;">{{ measurement[0].strftime('%d/%m/%Y') }}</td>
+                <td style="padding: 10px; text-align: center;">{{ measurement[1] if measurement[1] else '-' }}</td>
+                <td style="padding: 10px; text-align: center;">{{ measurement[2] if measurement[2] else '-' }}</td>
+                <td style="padding: 10px; text-align: center;">{{ measurement[3] if measurement[3] else '-' }}</td>
+                <td style="padding: 10px; text-align: center;">{{ measurement[4] if measurement[4] else '-' }}</td>
+                <td style="padding: 10px; text-align: center;">{{ measurement[5] if measurement[5] else '-' }}</td>
+                <td style="padding: 10px; text-align: center;">{{ measurement[6] if measurement[6] else '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 <br><br>
 <a href="/workouts" class="btn">Volver a Sesiones</a>
 

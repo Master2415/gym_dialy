@@ -48,7 +48,8 @@ def init_db():
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
                 full_name TEXT,
-                email TEXT UNIQUE
+                email TEXT UNIQUE,
+                theme_preference TEXT DEFAULT 'light'
             )
         """)
         
@@ -131,6 +132,10 @@ def init_db():
         cur.execute("SHOW COLUMNS FROM users LIKE 'email'")
         if not cur.fetchone():
             cur.execute("ALTER TABLE users ADD COLUMN email VARCHAR(100) UNIQUE")
+            
+        cur.execute("SHOW COLUMNS FROM users LIKE 'theme_preference'")
+        if not cur.fetchone():
+            cur.execute("ALTER TABLE users ADD COLUMN theme_preference VARCHAR(20) DEFAULT 'light'")
 
         cur.execute("""
             CREATE TABLE IF NOT EXISTS exercises (

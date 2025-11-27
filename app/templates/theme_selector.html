@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Seleccionar Tema</h2>
+
+<div style="max-width: 800px;">
+    <p>Selecciona el tema de color que prefieras para la aplicación:</p>
+
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+        <!-- Light Theme -->
+        <div class="theme-card" onclick="selectTheme('light')"
+            style="cursor: pointer; padding: 20px; border-radius: 8px; border: 2px solid var(--border-color); background: #f4f4f9; color: #333;">
+            <h3 style="margin-top: 0; color: #333;">Claro</h3>
+            <div style="display: flex; gap: 5px; margin: 10px 0;">
+                <div style="width: 30px; height: 30px; background: #4CAF50; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #6c757d; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #d9534f; border-radius: 4px;"></div>
+            </div>
+            <p style="font-size: 0.9em; color: #666;">Tema claro predeterminado</p>
+        </div>
+
+        <!-- Dark Theme -->
+        <div class="theme-card" onclick="selectTheme('dark')"
+            style="cursor: pointer; padding: 20px; border-radius: 8px; border: 2px solid var(--border-color); background: #1e1e1e; color: #e0e0e0;">
+            <h3 style="margin-top: 0; color: #fff;">Oscuro</h3>
+            <div style="display: flex; gap: 5px; margin: 10px 0;">
+                <div style="width: 30px; height: 30px; background: #66bb6a; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #424242; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #ef5350; border-radius: 4px;"></div>
+            </div>
+            <p style="font-size: 0.9em; color: #aaa;">Tema oscuro para reducir fatiga visual</p>
+        </div>
+
+        <!-- Blue Theme -->
+        <div class="theme-card" onclick="selectTheme('blue')"
+            style="cursor: pointer; padding: 20px; border-radius: 8px; border: 2px solid var(--border-color); background: #1b263b; color: #e0e1dd;">
+            <h3 style="margin-top: 0; color: #fff;">Azul</h3>
+            <div style="display: flex; gap: 5px; margin: 10px 0;">
+                <div style="width: 30px; height: 30px; background: #4a90e2; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #415a77; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #e63946; border-radius: 4px;"></div>
+            </div>
+            <p style="font-size: 0.9em; color: #aaa;">Tonos azules fríos y profesionales</p>
+        </div>
+
+        <!-- Green Theme -->
+        <div class="theme-card" onclick="selectTheme('green')"
+            style="cursor: pointer; padding: 20px; border-radius: 8px; border: 2px solid var(--border-color); background: #2d4a2d; color: #e8f5e9;">
+            <h3 style="margin-top: 0; color: #fff;">Verde</h3>
+            <div style="display: flex; gap: 5px; margin: 10px 0;">
+                <div style="width: 30px; height: 30px; background: #66bb6a; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #4a7c4a; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #ef5350; border-radius: 4px;"></div>
+            </div>
+            <p style="font-size: 0.9em; color: #aaa;">Inspirado en la naturaleza</p>
+        </div>
+
+        <!-- Purple Theme -->
+        <div class="theme-card" onclick="selectTheme('purple')"
+            style="cursor: pointer; padding: 20px; border-radius: 8px; border: 2px solid var(--border-color); background: #2d1b4e; color: #f3e5f5;">
+            <h3 style="margin-top: 0; color: #fff;">Púrpura</h3>
+            <div style="display: flex; gap: 5px; margin: 10px 0;">
+                <div style="width: 30px; height: 30px; background: #ab47bc; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #6a4c93; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #e91e63; border-radius: 4px;"></div>
+            </div>
+            <p style="font-size: 0.9em; color: #aaa;">Vibrante y creativo</p>
+        </div>
+
+        <!-- Amber Theme -->
+        <div class="theme-card" onclick="selectTheme('amber')"
+            style="cursor: pointer; padding: 20px; border-radius: 8px; border: 2px solid var(--border-color); background: #4e2d1b; color: #fff3e0;">
+            <h3 style="margin-top: 0; color: #fff;">Ámbar</h3>
+            <div style="display: flex; gap: 5px; margin: 10px 0;">
+                <div style="width: 30px; height: 30px; background: #ff9800; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #8d6e63; border-radius: 4px;"></div>
+                <div style="width: 30px; height: 30px; background: #f44336; border-radius: 4px;"></div>
+            </div>
+            <p style="font-size: 0.9em; color: #aaa;">Tonos cálidos y acogedores</p>
+        </div>
+    </div>
+
+    <div style="margin-top: 30px;">
+        <p
+            style="padding: 15px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+            <strong>Tema actual:</strong> <span id="current-theme"></span>
+        </p>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <a href="/settings" class="btn btn-secondary">Volver a Configuración</a>
+    </div>
+</div>
+
+<script>
+    function selectTheme(theme) {
+        setTheme(theme);
+        updateCurrentTheme();
+        // Visual feedback
+        document.querySelectorAll('.theme-card').forEach(card => {
+            card.style.transform = 'scale(1)';
+        });
+        event.currentTarget.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            event.currentTarget.style.transform = 'scale(1)';
+        }, 200);
+    }
+
+    function updateCurrentTheme() {
+        const theme = localStorage.getItem('theme') || 'light';
+        const themeNames = {
+            'light': 'Claro',
+            'dark': 'Oscuro',
+            'blue': 'Azul',
+            'green': 'Verde',
+            'purple': 'Púrpura',
+            'amber': 'Ámbar'
+        };
+        document.getElementById('current-theme').textContent = themeNames[theme] || theme;
+    }
+
+    // Initialize current theme display
+    updateCurrentTheme();
+
+    // Add hover effects
+    document.querySelectorAll('.theme-card').forEach(card => {
+        card.style.transition = 'transform 0.2s, box-shadow 0.2s';
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-5px)';
+            card.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translateY(0)';
+            card.style.boxShadow = 'none';
+        });
+    });
+</script>
+
+{% endblock %}

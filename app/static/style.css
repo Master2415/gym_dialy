@@ -42,6 +42,95 @@
     --calendar-day-text: #fff;
 }
 
+[data-theme="blue"] {
+    --bg-color: #0d1b2a;
+    --container-bg: #1b263b;
+    --text-color: #e0e1dd;
+    --heading-color: #ffffff;
+    --primary-color: #4a90e2;
+    --danger-color: #e63946;
+    --secondary-color: #415a77;
+    --secondary-hover: #778da9;
+    --border-color: #415a77;
+    --table-header-bg: #415a77;
+    --table-header-text: #e0e1dd;
+    --table-row-even: #2d3e50;
+    --input-bg: #2d3e50;
+    --input-border: #415a77;
+    --shadow-color: #000;
+    --card-bg: #2d3e50;
+    --calendar-bg: #1b263b;
+    --calendar-day-bg: #415a77;
+    --calendar-day-text: #e0e1dd;
+}
+
+[data-theme="green"] {
+    --bg-color: #1a2f1a;
+    --container-bg: #2d4a2d;
+    --text-color: #e8f5e9;
+    --heading-color: #ffffff;
+    --primary-color: #66bb6a;
+    --danger-color: #ef5350;
+    --secondary-color: #4a7c4a;
+    --secondary-hover: #5a9a5a;
+    --border-color: #4a7c4a;
+    --table-header-bg: #4a7c4a;
+    --table-header-text: #e8f5e9;
+    --table-row-even: #3a5a3a;
+    --input-bg: #3a5a3a;
+    --input-border: #4a7c4a;
+    --shadow-color: #000;
+    --card-bg: #3a5a3a;
+    --calendar-bg: #2d4a2d;
+    --calendar-day-bg: #4a7c4a;
+    --calendar-day-text: #e8f5e9;
+}
+
+[data-theme="purple"] {
+    --bg-color: #1a0d2e;
+    --container-bg: #2d1b4e;
+    --text-color: #f3e5f5;
+    --heading-color: #ffffff;
+    --primary-color: #ab47bc;
+    --danger-color: #e91e63;
+    --secondary-color: #6a4c93;
+    --secondary-hover: #8b6bb7;
+    --border-color: #6a4c93;
+    --table-header-bg: #6a4c93;
+    --table-header-text: #f3e5f5;
+    --table-row-even: #3d2e5a;
+    --input-bg: #3d2e5a;
+    --input-border: #6a4c93;
+    --shadow-color: #000;
+    --card-bg: #3d2e5a;
+    --calendar-bg: #2d1b4e;
+    --calendar-day-bg: #6a4c93;
+    --calendar-day-text: #f3e5f5;
+}
+
+[data-theme="amber"] {
+    --bg-color: #2e1a0d;
+    --container-bg: #4e2d1b;
+    --text-color: #fff3e0;
+    --heading-color: #ffffff;
+    --primary-color: #ff9800;
+    --danger-color: #f44336;
+    --secondary-color: #8d6e63;
+    --secondary-hover: #a1887f;
+    --border-color: #8d6e63;
+    --table-header-bg: #8d6e63;
+    --table-header-text: #fff3e0;
+    --table-row-even: #5a3a2d;
+    --input-bg: #5a3a2d;
+    --input-border: #8d6e63;
+    --shadow-color: #000;
+    --card-bg: #5a3a2d;
+    --calendar-bg: #4e2d1b;
+    --calendar-day-bg: #8d6e63;
+    --calendar-day-text: #fff3e0;
+}
+
+
 body {
     font-family: Arial, sans-serif;
     background: var(--bg-color);
@@ -65,6 +154,39 @@ h1,
 h2 {
     color: var(--heading-color);
 }
+
+/* Settings Menu Dropdown */
+.settings-menu {
+    position: relative;
+}
+
+.settings-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 5px;
+    background-color: var(--container-bg);
+    min-width: 180px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.settings-dropdown a {
+    color: var(--text-color);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.2s;
+}
+
+.settings-dropdown a:hover {
+    background-color: var(--bg-color);
+}
+
 
 button,
 .btn {

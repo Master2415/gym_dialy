@@ -4,10 +4,6 @@
 
 <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
     <a class="btn btn-primary" href="/workouts/new">Nueva sesión</a>
-    <a class="btn btn-secondary" href="/exercises">Gestionar Ejercicios</a>
-    <a class="btn btn-secondary" href="/analytics">Ver Progreso 📈</a>
-    <a class="btn btn-secondary" href="/measurements">Mediciones 📏</a>
-    <a class="btn btn-secondary" href="/settings">Configuración ⚙️</a>
 </div>
 
 <style>
@@ -64,9 +60,12 @@
 
 <script>
     const workoutDates = {{ workout_dates | tojson }}; // List of "YYYY-MM-DD"
+    const currentDateFilter = "{{ filters.date }}"; // Currently selected date
     const calendarEl = document.getElementById('calendar');
     const monthYearEl = document.getElementById('monthYear');
-    let currentDate = new Date();
+
+    // Initialize calendar with selected date or today
+    let currentDate = currentDateFilter ? new Date(currentDateFilter + 'T00:00:00') : new Date();
 
     function renderCalendar(date) {
         calendarEl.innerHTML = '';
@@ -77,11 +76,6 @@
 
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        // Adjust for Monday start (0=Sunday, 1=Monday...)
-        // If we want Monday as first day: (firstDay + 6) % 7
-        // Let's stick to standard Sunday start for simplicity or adjust if needed.
-        // Let's assume standard Sunday start for now.
 
         for (let i = 0; i < firstDay; i++) {
             const emptyDiv = document.createElement('div');
@@ -95,9 +89,24 @@
             dayDiv.textContent = i;
 
             const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+
             if (workoutDates.includes(dateString)) {
                 dayDiv.classList.add('has-workout');
             }
+
+            // Highlight selected date
+            if (dateString === currentDateFilter) {
+                dayDiv.style.border = '2px solid var(--primary-color)';
+                dayDiv.style.fontWeight = 'bold';
+                dayDiv.style.backgroundColor = 'rgba(var(--primary-rgb), 0.2)'; // Assuming you have this or similar
+            }
+
+            // Add click event to filter by date
+            dayDiv.addEventListener('click', () => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('date', dateString);
+                window.location.href = url.toString();
+            });
 
             calendarEl.appendChild(dayDiv);
         }
@@ -124,7 +133,7 @@
     </div>
     <div class="stat-card">
         <h3>{{ dashboard.best_weight }} kg</h3>
-        <p>Mejor Peso (Récord)</p>
+        <p>Mejor Peso Levantado</p>
     </div>
 </div>
 
@@ -140,7 +149,8 @@
             {% endfor %}
         </select>
 
-        <input type="date" name="date" value="{{ filters.date }}">
+        <!-- Hidden date input to maintain filter when submitting form -->
+        <input type="hidden" name="date" value="{{ filters.date }}">
 
         <select name="sort">
             <option value="date_desc" {% if filters.sort=='date_desc' %}selected{% endif %}>Más recientes</option>
@@ -179,9 +189,9 @@
                 <td>{{ w[5] | round(1) }} kg</td>
                 <td>{{ w[6] }}</td>
                 <td style="white-space: nowrap;">
-                    <a href="/workouts/edit/{{ w[7] }}" class="btn btn-sm btn-secondary" title="Editar">✏️</a>
+                    <a href="/workouts/edit/{{ w[7] }}" class="btn btn-sm btn-secondary" title="Editar">Editar</a>
                     <a href="#" class="btn btn-sm btn-danger" title="Eliminar"
-                        onclick="confirmDelete('{{ w[7] }}')">🗑️</a>
+                        onclick="confirmDelete('{{ w[7] }}')">Eliminar</a>
                 </td>
             </tr>
             {% endfor %}

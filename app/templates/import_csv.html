@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Importar Datos desde CSV</h2>
+
+<div
+    style="max-width: 800px; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
+    <h3>Instrucciones</h3>
+    <p>El archivo CSV debe tener las siguientes columnas en este orden:</p>
+    <ul>
+        <li><strong>fecha</strong>: Formato YYYY-MM-DD (ejemplo: 2024-01-15)</li>
+        <li><strong>grupo_muscular</strong>: Nombre del grupo muscular (ejemplo: Pecho, Espalda, Piernas)</li>
+        <li><strong>ejercicio</strong>: Nombre del ejercicio</li>
+        <li><strong>series</strong>: Número de series</li>
+        <li><strong>reps</strong>: Número de repeticiones</li>
+        <li><strong>peso</strong>: Peso en kilogramos</li>
+        <li><strong>comentario</strong>: Comentario opcional (puede estar vacío)</li>
+    </ul>
+
+    <h4>Ejemplo de CSV:</h4>
+    <pre style="background: var(--bg-color); padding: 10px; border-radius: 4px; overflow-x: auto;">fecha,grupo_muscular,ejercicio,series,reps,peso,comentario
+2024-01-15,Pecho,Press Banca,3,10,80,Buen día
+2024-01-15,Pecho,Aperturas,3,12,25,
+2024-01-16,Espalda,Dominadas,4,8,0,Peso corporal</pre>
+
+    <form method="POST" enctype="multipart/form-data" style="margin-top: 20px;">
+        <div class="form-group">
+            <label for="csv_file">Seleccionar archivo CSV:</label>
+            <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary">Importar Datos</button>
+            <a href="/settings" class="btn btn-secondary" style="margin-left: 10px;">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

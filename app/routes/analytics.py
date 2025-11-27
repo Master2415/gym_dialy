@@ -44,9 +44,9 @@ def analytics():
     
     if all_exercises:
         format_strings = ','.join(['%s'] * len(all_exercises))
-        # Get max weight per workout for these exercises
+        # Get max weight and avg reps per workout for these exercises
         query = f"""
-            SELECT e.nombre, w.fecha, MAX(ws.peso)
+            SELECT e.nombre, w.fecha, MAX(ws.peso), AVG(ws.reps)
             FROM workout_series ws
             JOIN workout_details wd ON ws.workout_detail_id = wd.id
             JOIN workouts w ON wd.workout_id = w.id
@@ -63,11 +63,13 @@ def analytics():
             name = row[0]
             date = row[1].strftime('%Y-%m-%d')
             weight = float(row[2])
+            reps = float(row[3]) if row[3] else 0
             
             if name not in chart_data:
-                chart_data[name] = []
+                chart_data[name] = {'weight': [], 'reps': []}
             
-            chart_data[name].append({'x': date, 'y': weight})
+            chart_data[name]['weight'].append({'x': date, 'y': weight})
+            chart_data[name]['reps'].append({'x': date, 'y': round(reps, 1)})
             
     # 3. Volumen por Grupo Muscular
     time_range = request.args.get('time_range', '30_days')
@@ -156,7 +158,10 @@ def measurements():
         if row[5]: chart_data['Pecho'].append({'x': date, 'y': float(row[5])})
         if row[6]: chart_data['% Grasa'].append({'x': date, 'y': float(row[6])})
 
-    return render_template("measurements.html", chart_data=chart_data, today=datetime.date.today().strftime('%Y-%m-%d'))
+    return render_template("measurements.html", 
+                           chart_data=chart_data, 
+                           today=datetime.date.today().strftime('%Y-%m-%d'),
+                           measurements=rows)
 
 @analytics_bp.route("/history/<int:exercise_id>")
 @login_required
@@ -189,16 +194,19 @@ def history(exercise_id):
     # Datos para el gráfico
     chart_data = {
         'Peso': [],
-        '1RM': []
+        '1RM': [],
+        'Reps': []
     }
     
     for row in reversed(history_data):
         date = row[0].strftime('%Y-%m-%d')
         weight = float(row[3]) if row[3] else 0
         one_rm = float(row[5]) if row[5] else 0
+        avg_reps = float(row[2]) / float(row[1]) if row[1] and row[2] else 0  # total_reps / series
         
         chart_data['Peso'].append({'x': date, 'y': weight})
         chart_data['1RM'].append({'x': date, 'y': round(one_rm, 1)})
+        chart_data['Reps'].append({'x': date, 'y': round(avg_reps, 1)})
         
     conn.close()
     

@@ -14,6 +14,7 @@
                 <th>Fecha</th>
                 <th>Series</th>
                 <th>Total Reps</th>
+                <th>Reps Promedio</th>
                 <th>Max Peso</th>
                 <th>1RM Est.</th>
                 <th>Detalle (Reps x Peso)</th>
@@ -25,6 +26,7 @@
                 <td>{{ h[0] }}</td>
                 <td>{{ h[1] }}</td>
                 <td>{{ h[2] }}</td>
+                <td>{{ (h[2] / h[1]) | round(1) }}</td>
                 <td>{{ h[3] }} kg</td>
                 <td>{{ h[5] | round(1) }} kg</td>
                 <td>{{ h[4] }}</td>
@@ -33,6 +35,10 @@
         </tbody>
     </table>
 </div>
+<p style="margin-top: 10px; font-size: 0.9em; color: var(--text-color); opacity: 0.8;">
+    * <strong>Reps Promedio:</strong> Se calcula dividiendo el total de repeticiones entre el número de series
+    realizadas en esa sesión.
+</p>
 
 <br>
 <a href="/workouts" class="btn">Volver a Sesiones</a>
@@ -41,8 +47,15 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+    // Helper to get CSS variable value
+    function getCssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
     const chartData = {{ chart_data | tojson }};
     const ctx = document.getElementById('historyChart').getContext('2d');
+    const textColor = getCssVar('--text-color');
+    const gridColor = getCssVar('--border-color');
 
     new Chart(ctx, {
         type: 'line',
@@ -53,26 +66,61 @@
                     data: chartData['Peso'],
                     borderColor: '#36A2EB',
                     backgroundColor: '#36A2EB',
-                    tension: 0.1
+                    tension: 0.1,
+                    yAxisID: 'y-weight'
                 },
                 {
                     label: '1RM Estimado (kg)',
                     data: chartData['1RM'],
                     borderColor: '#FF6384',
                     backgroundColor: '#FF6384',
-                    tension: 0.1
+                    tension: 0.1,
+                    yAxisID: 'y-weight',
+                    borderDash: [5, 5]
+                },
+                {
+                    label: 'Repeticiones Promedio',
+                    data: chartData['Reps'],
+                    borderColor: '#4BC0C0',
+                    backgroundColor: '#4BC0C0',
+                    tension: 0.1,
+                    yAxisID: 'y-reps'
                 }
             ]
         },
         options: {
             responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: textColor }
+                },
+                title: {
+                    display: true,
+                    text: 'Evolución de Peso y Repeticiones',
+                    color: textColor
+                }
+            },
             scales: {
                 x: {
                     type: 'category',
-                    title: { display: true, text: 'Fecha' }
+                    ticks: { color: textColor },
+                    grid: { color: gridColor },
+                    title: { display: true, text: 'Fecha', color: textColor }
                 },
-                y: {
-                    title: { display: true, text: 'Peso (kg)' }
+                'y-weight': {
+                    type: 'linear',
+                    position: 'left',
+                    ticks: { color: textColor },
+                    grid: { color: gridColor },
+                    title: { display: true, text: 'Peso (kg)', color: textColor }
+                },
+                'y-reps': {
+                    type: 'linear',
+                    position: 'right',
+                    ticks: { color: textColor },
+                    grid: { drawOnChartArea: false },
+                    title: { display: true, text: 'Repeticiones', color: textColor }
                 }
             }
         }
