@@ -22,23 +22,27 @@
 ### ✨ Características Principales
 
 #### 📊 Gestión de Entrenamientos
+
 - ✅ **Registro de Sesiones**: Crea y edita sesiones de entrenamiento con múltiples ejercicios
 - ✅ **Organización por Grupo Muscular**: Clasifica ejercicios por grupos (Pecho, Espalda, Piernas, etc.)
 - ✅ **Seguimiento Detallado**: Registra series, repeticiones, peso y comentarios
 - ✅ **Historial Completo**: Visualiza todo tu historial de entrenamientos
 
 #### 📈 Análisis y Progreso
+
 - ✅ **Dashboard Estadístico**: Días entrenados del mes y mejor 1RM estimado
 - ✅ **Calendario Visual**: Visualiza tus días de entrenamiento en un calendario interactivo
 - ✅ **Gráficas de Progreso**: Analiza tu evolución por ejercicio
 - ✅ **Calculadora de 1RM**: Estimación automática de tu máximo de una repetición
 
 #### 📏 Mediciones Corporales
+
 - ✅ **Registro de Medidas**: Peso, porcentaje de grasa, masa muscular y BMI
 - ✅ **Gráficas de Evolución**: Visualiza tu progreso corporal a lo largo del tiempo
 - ✅ **Calculadora de Calorías**: BMR y TDEE según nivel de actividad
 
 #### 🎨 Interfaz y UX
+
 - ✅ **Modo Claro/Oscuro**: Cambia entre temas según tu preferencia
 - ✅ **Diseño Responsive**: Funciona perfectamente en móviles, tablets y escritorio
 - ✅ **Filtros Avanzados**: Busca por ejercicio, fecha, grupo muscular
@@ -107,6 +111,7 @@ python run.py
 ### Funcionalidades
 
 #### 🏋️ Registrar Entrenamiento
+
 1. Click en **"Nueva sesión"**
 2. Selecciona **grupo muscular**
 3. Elige el **ejercicio**
@@ -115,17 +120,20 @@ python run.py
 6. Guarda la sesión
 
 #### 📊 Ver Progreso
+
 1. Click en **"Ver Progreso 📈"**
 2. Visualiza gráficas por ejercicio
 3. Analiza tu evolución
 
 #### 📏 Mediciones Corporales
+
 1. Click en **"Mediciones Corporales 📏"**
 2. Registra peso, grasa, músculo
 3. Calcula BMR y TDEE
 4. Visualiza tendencias
 
 #### 📤 Exportar Datos
+
 1. Click en **"Exportar 📊"**
 2. Selecciona formato (CSV/JSON)
 3. Descarga tu historial
@@ -134,37 +142,61 @@ python run.py
 
 ## 📸 Capturas de Pantalla
 
-### Dashboard Principal
-*Vista general con calendario, estadísticas y lista de entrenamientos*
+### 🔐 Autenticación
 
-### Formulario de Sesión
-*Interfaz para registrar nuevos entrenamientos*
+|           Login            |
+| :------------------------: |
+| ![Login](images/Login.png) |
 
-### Análisis de Progreso
-*Gráficas de evolución por ejercicio*
+### 🏠 Dashboard y Navegación
 
-### Mediciones Corporales
-*Seguimiento de composición corporal*
+|                  Dashboard Principal                   |                Lista de Sesiones                |
+| :----------------------------------------------------: | :---------------------------------------------: |
+| ![Dashboard Principal](images/Dashboard_principal.png) | ![Lista de Sesiones](images/Lista_seciones.png) |
 
-### Modo Oscuro
-*Interfaz adaptada para ambientes con poca luz*
+### 🏋️ Gestión de Entrenamientos
+
+|                Gestión de Ejercicios                 |             Formulario Sesión (1)              |             Formulario Sesión (2)              |
+| :--------------------------------------------------: | :--------------------------------------------: | :--------------------------------------------: |
+| ![Gestión Ejercicios](images/Gestion_Ejercicios.png) | ![Formulario 1](images/Formulario_Secion1.png) | ![Formulario 2](images/Formulario_Secion2.png) |
+
+### 📈 Progreso y Estadísticas
+
+|            Progreso (Oscuro)            |                Progreso (Claro)                 |
+| :-------------------------------------: | :---------------------------------------------: |
+| ![Progreso Oscuro](images/Progreso.png) | ![Progreso Claro](images/Progeso_temaClaro.png) |
+
+### 📏 Mediciones y Herramientas
+
+|                 Calculadora y Mediciones                  |
+| :-------------------------------------------------------: |
+| ![Mediciones](images/Mediciones_calaculadoraCalorias.png) |
+
+### ⚙️ Configuración
+
+|               Configuración                |           Temas            |
+| :----------------------------------------: | :------------------------: |
+| ![Configuración](images/configuracion.png) | ![Temas](images/temas.png) |
 
 ---
 
 ## 🛠️ Tecnologías
 
 ### Backend
+
 - **Flask 3.0.0** - Framework web
 - **Python 3.12** - Lenguaje de programación
 - **SQLite/MySQL** - Base de datos
 
 ### Frontend
+
 - **Jinja2** - Motor de plantillas
 - **Vanilla CSS** - Estilos con variables CSS
 - **Vanilla JavaScript** - Interactividad
 - **Chart.js** - Gráficas y visualizaciones
 
 ### DevOps
+
 - **Docker** - Containerización
 - **Docker Compose** - Orquestación
 
@@ -228,6 +260,7 @@ Si encuentras algún bug o tienes sugerencias:
 ## 📝 Roadmap
 
 ### Próximas Características
+
 - [ ] PWA (Progressive Web App)
 - [ ] Notificaciones de entrenamiento
 - [ ] Plantillas de rutinas
@@ -252,7 +285,6 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 - Proyecto: [gym_dialy](https://github.com/Master2415/gym_dialy)
 
 ---
-
 
 <div align="center">
 
